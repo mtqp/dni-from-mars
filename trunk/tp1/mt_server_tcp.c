@@ -1,8 +1,8 @@
 #include "mt.h"
 int main()
 {
-	int sock;
-	struct sockaddr_in name;
+	int sock, client_sock, client_addr_size;
+	struct sockaddr_in name, client_addr;
 	char buf[MAX_MSG_LENGTH];
 
 	FILE* fd = NULL;
@@ -22,18 +22,33 @@ int main()
 		perror("binding datagram socket");
 		exit(1);
 	}
+	/* Pone el socket a escuchar conexiones entrantes */
+	if( listen(sock,1) == -1 ){
+		perror("escuchando");
+		exit(1);
+	}
+	/* Acepta la conexión */
+	client_addr_size = sizeof(client_addr);
+	client_sock = accept(sock, (struct sockaddr*) &client_addr, &client_addr_size );
+	if( client_sock == -1 ) {
+		perror("aceptando la conexion");
+		exit(1);
+	}
 	/* Recibimos mensajes hasta que alguno sea el que marca el final. */
 	for (;;) {
-		read(sock, buf, MAX_MSG_LENGTH);
+		read(client_sock, buf, MAX_MSG_LENGTH);
 		if (strncmp(buf, END_STRING, MAX_MSG_LENGTH) == 0)
+			break;
+		if ( strcmp( buf, "chau" ) == 0 )
 			break;
 		printf("Comando: %s", buf);
 		fd = popen(buf,"r");
 		output_size = fread( output, sizeof(char), MAX_MSG_LENGTH, fd );
 		output[output_size]=0;
-		sendto( sock, output, output_size, 0, (struct sockaddr*) &name, sizeof(name));
+		sendto( client_sock, output, output_size, 0, (struct sockaddr*) &client_addr, client_addr_size);
 		fclose(fd);
 	}
+	close(client_sock);
 	/* Cerrar socket de recepción. */
 	close(sock);
 	return 0;
