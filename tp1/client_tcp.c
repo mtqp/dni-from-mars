@@ -14,7 +14,7 @@ int main()
 	int sock;
 	char buf[MAX_MSG_LENGTH];
 	/* Crear socket sobre el que se lee: dominio INET, protocolo UDP (DGRAM). */
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror("abriendo socket");
 		exit(1);
@@ -32,6 +32,8 @@ int main()
             perror("enviando");
             exit(1);
         }
+		if ( strcmp( str, "chau\n" ) == 0 )
+			break;
 		read(sock, buf, MAX_MSG_LENGTH);
 		printf("ROCK: %s",buf);
     }
