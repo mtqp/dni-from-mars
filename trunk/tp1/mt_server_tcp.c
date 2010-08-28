@@ -1,4 +1,5 @@
 #include "mt.h"
+
 int main()
 {
 	int sock, client_sock, client_addr_size;
@@ -35,17 +36,26 @@ int main()
 		exit(1);
 	}
 	/* Recibimos mensajes hasta que alguno sea el que marca el final. */
-	for (;;) {
-		read(client_sock, buf, MAX_MSG_LENGTH);
-		if (strncmp(buf, END_STRING, MAX_MSG_LENGTH) == 0)
+	while(1){
+		if( read(client_sock, buf, MAX_MSG_LENGTH) == -1 ) {
+			perror("leyendo del socket");
+			exit(1);
+		}
+		if (strncmp(buf, END_STRING, MAX_MSG_LENGTH) == 0){
 			break;
-		if ( strcmp( buf, "chau" ) == 0 )
-			break;
+		}
 		printf("Comando: %s", buf);
 		fd = popen(buf,"r");
+		if( fd == 0 ) {
+			perror("corriendo el proceso hijo");
+			exit(1);
+		}
 		output_size = fread( output, sizeof(char), MAX_MSG_LENGTH, fd );
-		output[output_size]=0;
-		sendto( client_sock, output, output_size, 0, (struct sockaddr*) &client_addr, client_addr_size);
+		output[output_size-1]=0;
+		if( sendto( client_sock, output, output_size, 0, (struct sockaddr*) &client_addr, client_addr_size) == -1 ) {
+			perror("enviando");
+			exit(1);
+		}
 		fclose(fd);
 	}
 	close(client_sock);
