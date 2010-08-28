@@ -1,4 +1,4 @@
-BIN=mt_server client
+BIN=mt_server client mt_server_tcp client_tcp
 
 all: $(BIN)
 

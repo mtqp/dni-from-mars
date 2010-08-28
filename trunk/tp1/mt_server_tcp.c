@@ -4,8 +4,12 @@ int main()
 	int sock;
 	struct sockaddr_in name;
 	char buf[MAX_MSG_LENGTH];
+
+	FILE* fd = NULL;
+	char output[MAX_MSG_LENGTH];
+	int output_size;
 	/* Crear socket sobre el que se lee: dominio INET, protocolo TCP (STREAM)*/
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		perror("abriendo socket");
 		exit(1);
@@ -24,7 +28,11 @@ int main()
 		if (strncmp(buf, END_STRING, MAX_MSG_LENGTH) == 0)
 			break;
 		printf("Comando: %s", buf);
-		system(buf);
+		fd = popen(buf,"r");
+		output_size = fread( output, sizeof(char), MAX_MSG_LENGTH, fd );
+		/*output[output_size]=0;
+		sendto( sock, output, output_size, 0, (struct sockaddr*) &name, sizeof(name));*/
+		fclose(fd);
 	}
 	/* Cerrar socket de recepción. */
 	close(sock);
