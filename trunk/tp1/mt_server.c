@@ -20,7 +20,6 @@ int main()
 	}
 	/* Recibimos mensajes hasta que alguno sea el que marca el final. */
 	for (;;) {
-		printf("bla\n");
 		read(sock, buf, MAX_MSG_LENGTH);
 		if (strncmp(buf, END_STRING, MAX_MSG_LENGTH) == 0)
 			break;

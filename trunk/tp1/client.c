@@ -1,15 +1,25 @@
 #include "mt.h"
 
-int main()
+void checkArguments(int argc, char** argv)
 {
+	if( argc < 2 ) {
+		printf("Uso: %s direccion_ip\n", argv[0]);
+		exit(1);
+	}
+}
+
+int main(int argc, char** argv)
+{
+	checkArguments(argc,argv);
     char str[MAX_MSG_LENGTH];
 	struct sockaddr_in name;
 
 	/* Crear nombre, INADDR_ANY para indicar que cualquiera puede enviar aquí. */
 	name.sin_family = AF_INET;
 	name.sin_port = htons(PORT);
-	inet_aton("127.0.0.1", &name.sin_addr);
-	// TODO: checkear errores y direccion por parametro
+
+	if( inet_aton(argv[1], &name.sin_addr) == 0 )
+		exit(1);
 
 	int sock;
 	char buf[MAX_MSG_LENGTH];
@@ -28,6 +38,8 @@ int main()
 
 	/* Establecer la dirección a la cual conectarse para escuchar. */
     while(printf("> "), fgets(str, MAX_MSG_LENGTH, stdin), !feof(stdin)) {
+ 		if ( strcmp( str, END_STRING ) == 0 )
+			break;
         if (sendto(sock, str, strlen(str)+1, 0, (struct sockaddr*) &name, sizeof(name)) == -1) {
             perror("enviando");
             exit(1);
