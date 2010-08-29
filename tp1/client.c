@@ -11,6 +11,7 @@ void checkArguments(int argc, char** argv)
 int main(int argc, char** argv)
 {
 	checkArguments(argc,argv);
+	
     char str[MAX_MSG_LENGTH];
 	struct sockaddr_in name;
 
@@ -27,12 +28,6 @@ int main(int argc, char** argv)
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		perror("abriendo socket");
-		exit(1);
-	}
-
-	if( connect(sock,(struct sockaddr*)&name,sizeof(name)) == -1 )
-	{
-		perror("conectando");
 		exit(1);
 	}
 
