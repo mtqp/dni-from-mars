@@ -1,0 +1,14 @@
+ejercicio 1:
+	para seleccionar la dirección ip a conectarse, agregamos la función "checkArguments" la cual se encarga de analizar si existe algún parámetro con el que se debe correr el programa. Si existe alguno, lo toma como dir ip e intenta conectarse, de caso contrario imprimi por standard output la información para su correcto uso y termina el programa con el VALOR DE SALIDA (q onda dani) == 1. Tener en cuenta que no verifica si el string pasado por parámetro es efectivamente una dirección ip. Ese string se pasa a la función "inet_aton" encargada de transformala en dirección binaria en (Network byte order)
+	el programa abre un socket con protocolo UDP, para dominio INET (siempre chequeando que no haya errores) y lo conecta (CON EL PROGRAMA, CON QUE LO CONECTA!?!?!?)
+	entra a un ciclo while que envia el string que toma dle standard output (con fgets -BLOQUEANTE????-) y lo envía por el socket, quedándose ahora esperando a que algo nuevo vuelva a entrar por la entrada standard. Si lo que entra es "chau\n" se realiza un break y se escapa del while. Una vez afuera se procede a cerrar el socket y terminar el programa con STATUS cero.
+	
+ejercicio 2:
+	cliente:
+		utilizamos la misma función "checkArguments" para ver si el programa recibía algún parámetro para conectarse.
+		El socket lo abre con protocolo TCP, dominio INET
+		La diferencia principal es que en el ciclo while, el cliente envía el comando introducido al standard input y se queda esperando respuesta del servidor mediante  la función "read", de tipo bloqueante. Hasta que no se reciba nada el programa no continúa. Si recibe respuesta, realiza un printf del string que recibió
+	servidor:
+		abre un socket y lo linkea el sockaddr mediante la función bind, se pone a escuchar conexiones (es decir y algún cliente quiere conectarse) de manera bloqueante. Acepta al primero que quiera conectarse a él y empieza a leer de manera bloqueante lo que se escribe en el socket del cliente. Cuando se recibe información, se llama a la función "popen", la encargada de pipear la salida standard del shell del servidor y de abrir unnuevo proceso hijo. Mediante "fread", tomamos el file descriptor dado por "popen" guardamos el string dado por el standard output del shell y lo guardamos en un buffer "output" el cual es enviado, agregándole un cero al final al cliente. Se cierra el file descriptor y se queda a la espera de un nuevo string enviado por el cliente.
+		De nuevo, si se envía desde el cliente el string "chau", el cliente también se cierra.
+		Para no complicar las cosas, decidimos permitir sólo un cliente por servidor. 
