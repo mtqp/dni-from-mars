@@ -1,0 +1,16 @@
+ejercicio uno:
+	el programa mister genera un pipe entre dos procesos (hijos) y los intercomunica, uno de ellos envia strings por el socket y el otro devuelve la longitud del string q se paso. Ambos procesos, escriben en el socket y se mantienend e manera bloqueante mediante la instruccion read de c (HAY Q ESCRIBIRLO BIEN), es un socket o dos!?
+	luego de escribir en el socket algunas frases, los sockets se cierran y se procede a cerrar los procesos
+	cuando corremos el strace que muestra los procesos hijos (-q era? como era esa cuestion), es ahi donde nos damos cuenta que las intrucciones son bloqueante, porque cuando escribe un hijo, el otro (o el padre no se quien poronga essss) lee y escribe, una vez q termina de escribir, lo mismo sucede con el otro y asi la vida es un ciclo interminable de rock and roll
+	
+ejercicio dos:
+	en el archivo ptracer.c tnemos el codigo de nuestro programa que se encarga de evitar que se realicen forks y clones. este programa necesita como parametro de entrada, el programa que se necesita analizar. Si uno intenta ejecutarlo sin parametros, se envia el mje de uso.
+	ptracer genera un un hijo con la instruccion fork al cual lo habilita mediante la llamada a la syscall ptrace con parametro TRACEME al padre para poder seguir sus intrucciones paso por paso, o sus llamadas al sistema o LA OTRA COSA Q NO ME ACUERDO.
+	ejecuta el argumentode ptracer en el proceso hijo
+	entra a un ciclo while esperando con la instruccion wait que el proceso con TRACEME haga alguna syscall o de esas otras cosas locas. La llamada a wait pasa por referencia un entero el cual tiene el valor del estado del proceso, con eso se CHKEA que el programa haya terminado mediante la macro WIFEXITED.
+	Con ptrace podemos ver que syscall hizo el programa, pasandole como primer parametro PTRACE_PEEKUSER. Se CHKEA entonces que la siscall q levanto el wait sea distinta de fork o clone para poder continuar, si no puede continuar, se mata el proceso mediante ptrace(pkill, BLAH) y se llama a exit con valor de salida igual a cero. Si el programa debe continuar se le vuelve a asignar a ptrace que busque las syscals.
+	Si el psubproceso termina conrmalemente, llamando a exit, se "deslinkea" el proceso padre con el proceso hijo mediante ptrace(detach)
+	bueno no sirvio de mucho la verdad todo lo q escribi, pero bueno asi siento q hice algo!
+	MAÑANA EMPEZAMOS CON EL OTRO!
+	mtqp
+	
