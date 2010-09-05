@@ -33,18 +33,19 @@ Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
 		\item Cierra los \kw{pipes}.
 		\item Termina.
 	\end{itemize}
+	\vspace*{1.5em}
 	\noindent{\bf Proceso hijo}
 	\begin{itemize}
 		\item Establece \code{p1} como \kw{pipe} de sólo lectura y \code{p2} como \kw{pipe} de sólo escritura. 
 		\item Espera a recibir un \kw{string} en \code{p1} y escribe en \code{p2} la longitud del \kw{string}.
-		\item Repite el paso anterior hasta que se cierra el \code{pipe} del que se está leyendo
+		\item Repite el paso anterior hasta que el padre cierra los \kw{pipes}.
 		\item Cierra los \kw{pipes}.
 		\item Termina.
 	\end{itemize}
 \end{section}
-
-%\begin{section}{\cmd{nofork}}
-
-%\end{section}
+\newpage
+\begin{section}{Programa \cmd{nofork}}
+	El programa \code{nofork} ejecuta el comando pasado por	parámetro, no permitiéndole a este ejecutar ninguna de las \kw{syscalls} prohibidas: \code{fork}, \code{clone}. Para ello, crea un proceso hijo mediante la instrucción \code{fork}, quien llama a la \kw{syscall} \code{ptrace} con parámetro \code{PTRACE\_TRACEME} para permitirle al padre rastrear la ejecución\footnote{\code{PTRACE\_TRACEME} hace que cualquier señal (salvo \code{SIGKILL}) enviada al proceso lo detenga y notifica al padre vía \code{wait}.}. Luego reemplaza al proceso actual (hijo) con el comando pasado por parámetro mediante la instrucción \code{execvp}. Por otra parte, el padre espera a que se produzca un cambio de estado en el proceso hijo vía \code{wait} y, mediante una llamada a \code{ptrace} con parámetro \code{PTRACE\_PEEKUSER}, obtiene el valor del registro \code{EAX}, que es el número de \kw{syscall} que ejecutó el proceso hijo. Si la \kw{syscall} era \code{fork} o \code{clone}, mata al proceso con una llamada a \code{ptrace} con parámetro \code{PTRACE\_KILL}, imprime \kw{Syscall prohibida} en \code{stdout} y termina el programa. En caso contrario, se sigue la ejecución del hijo hasta la próxima \kw{syscall} a través de una llamada a \code{ptrace} con parámetro \code{PTRACE\_SYSCALL}. Si ninguna de las \kw{syscalls} prohibidas fue ejecutada, el proceso hijo se ejecuta con normalidad y, al terminar de ejecutarse, termina el programa.
+\end{section}
 
 \end{document}
