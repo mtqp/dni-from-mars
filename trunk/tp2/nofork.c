@@ -23,7 +23,7 @@ int main(int argc, char** argv){
 		if (ptrace(PTRACE_TRACEME, 0, NULL, NULL)) {
 			perror("ERROR child ptrace(PTRACE TRACEME, ...)"); exit(1);
 		}
-	  execvp(argv[1], argv+1);	//CHEQUEAR SI VA ESTO O DE SEGUNDO PARAMETRO VA NULL
+	  execvp(argv[1], argv+1);
 
 	  perror("ERROR child exec(...)"); exit(1);  /* Si vuelve de exec() hubo un error */
 	} else {
