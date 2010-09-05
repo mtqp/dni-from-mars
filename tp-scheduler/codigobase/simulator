@@ -1,0 +1,22 @@
+#!/usr/bin/python
+
+import sys
+import traceback
+import os
+
+import graph
+
+if len(sys.argv)!=3 and len(sys.argv)!=4:
+  print "Usage: simulator <<scheduler_name>> <<task_set_name>> <<quantum>>"
+  sys.exit(1)
+
+scheduler_name = sys.argv[1]
+task_set_name  = sys.argv[2]
+
+cmdLine = "java -Xss120M -Xmx512M -cp bin sisop.Simulator " + scheduler_name + " " + task_set_name
+
+ret = os.system(cmdLine)
+
+if ret==0:
+  graph.read_timeline("timeline.dat")
+
