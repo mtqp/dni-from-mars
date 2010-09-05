@@ -52,7 +52,7 @@ class FCFS extends Scheduler {
     if ( next_task.ttime== next_task.ptime ) {
 
       next_task.ftime = current_time;
-
+	  next_task.wtime = current_time - next_task.rtime;	//linea para calcular el waiting time
       order.removeFirst();
       if (order.isEmpty())
         return null;
