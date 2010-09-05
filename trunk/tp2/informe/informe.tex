@@ -1,0 +1,50 @@
+\documentclass[12pt,titlepage]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\func}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\kw}[1]{{\em #1}}
+
+\title{{\sc\normalsize Sistemas Operativos}\\{\bf Taller de Syscalls}}
+\author{Grupo 20\vspace*{3em} \\ 
+\begin{tabular}{lcr}
+Daniel Grosso & 694/08 & dgrosso@gmail.com\\
+Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
+\end{tabular}}
+\date{\vspace*{3em} \normalsize{Septiembre 2010}}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+\begin{section}{Explicación de \cmd{mister}}
+	El ejecutable \cmd{mister} al inicio genera dos \kw{pipes} (que llamaremos \code{p1} y \code{p2}) y un proceso hijo. El comportamiento del proceso padre y el proceso hijo se describe a continuación:
+	
+	\vspace*{1.5em}
+	\noindent{\bf Proceso padre}
+	\begin{itemize}
+		\item Establece \code{p1} como \kw{pipe} de sólo escritura y \code{p2} como \kw{pipe} de sólo lectura. 
+		\item Escribe la palabra ``vaca'' en \code{p1} y espera a que el proceso hijo envíe una respuesta a través de \code{p2}. 
+		\item Repite el mismo procedimiento con dos frases distintas.
+		\item Escribe la palabra ``chau'' en \code{p1} y espera a que el proceso hijo envíe una respuesta a través de \code{p2}. 
+		\item Cierra los \kw{pipes}.
+		\item Termina.
+	\end{itemize}
+	\noindent{\bf Proceso hijo}
+	\begin{itemize}
+		\item Establece \code{p1} como \kw{pipe} de sólo lectura y \code{p2} como \kw{pipe} de sólo escritura. 
+		\item Espera a recibir un \kw{string} en \code{p1} y escribe en \code{p2} la longitud del \kw{string}.
+		\item Repite el paso anterior hasta que se cierra el \code{pipe} del que se está leyendo
+		\item Cierra los \kw{pipes}.
+		\item Termina.
+	\end{itemize}
+\end{section}
+
+%\begin{section}{\cmd{nofork}}
+
+%\end{section}
+
+\end{document}
