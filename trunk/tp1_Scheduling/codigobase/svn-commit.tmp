@@ -1,0 +1,8 @@
+Ejercicio 1, 2 y 3
+--This line, and those below, will be ignored--
+
+M    src/sisop/FCFS.java
+M    src/sisop/SJF.java
+M    src/sisop/SchedulerAnalyzer.java
+M    src/sisop/TaskSet.java
+M    timeline.dat
