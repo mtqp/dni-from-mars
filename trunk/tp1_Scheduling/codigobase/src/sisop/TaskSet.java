@@ -302,9 +302,9 @@ class TaskSet implements Iterable<Task> {
 
     private static TaskSet build_ej_1() { 
       TaskSet ej_1 = new TaskSet("ej_1");
-      ej_1.add( new Task("P1", 10, 4) );
-      ej_1.add( new Task("P2", 3,  4) );
-      ej_1.add( new Task("P3", 3,  6) );
+      ej_1.add( new Task("P1", 10, 5) );
+      ej_1.add( new Task("P2", 5,  5) );
+      ej_1.add( new Task("P3", 5,  6) );
       return ej_1;
     }
 
