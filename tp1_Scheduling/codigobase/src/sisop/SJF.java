@@ -55,6 +55,8 @@ class SJF extends Scheduler {
       } else {
         current_task = select_shortest_job( ready_tasks );
         ready_tasks.remove(current_task.name );
+        /** -ejercicio 2: calcular el waiting time- **/
+        current_task.wtime = current_time - current_task.rtime;
       }
     } else {
        if ( current_task.ttime == current_task.ptime ) {
