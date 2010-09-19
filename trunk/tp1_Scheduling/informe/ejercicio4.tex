@@ -1,16 +1,20 @@
 
 \begin{section}{Ejercicio 4}
 
-En los casos de los test "ts*", las colas nunca se encuentran vacías
+	En los casos de los test "ts*", las colas nunca se encuentran vacías, por lo tanto no encontramos ningún IDLE_TASK. Siempre existe un proceso que se inicia en el instante cero, es decir en el mismo momento que el scheduler empieza a funcionar. La política "first come, first served" toma el primer proceso que se encuentra en la lista y lo procesa, sin aplicar ningún tipo de política de desalojo. El CPU queda ocupado con la tarea tomada desde la cola hasta que el proceso decida irse (termine). Si bien no está contemplado la existencia de entrada salida en este trabajo práctico, si así hubiese sido, el cpu esperaría sin realizar ninguna operación hasta que el proceso que está en el haya terminado con su E/S y pueda continuar ejecutando.
+
+	A continuación, se detalla el análisis de los casos de pruebas que se dieron por la cátedra con sus respectivos tiempos de espera promedio ("waiting time).
+	
 Análisis FCFS:
-	Test UNO:
-		Como la cola NUNCA está vacía, siempre puede estar ejecutando un proceso, como el tiempo de cada proceso en ts1 es creciente, eso ayuda para bajar el tiempo de espera.
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 87
-	-------------------------------------
-dos:
-	Con una diferencia de 5 "nexts" entre cada una entran los procesos, cada uno entran con el tiempo para correr mayor q el siguiente, x lo tanto el wtime aumenta
+	Test "ts1":
+		El primer proceso se carga al mismo tiempo que se inicia el programa, y cada proceso pasa a estar en la cola de "ready", es decir en espera a que el procesador lo pueda atender, después de cinco unidades de tiempo (en relación a la llegada a la cola del proceso inmediatamente anterior).
+		Además, Este "set" posee procesos que se agregan de forma tal que la cantidad de unidades de tiempo para su procesamiento es creciente. El tiempo de espera promedio entonces, se ve minimizado. La idea es que cada proceso nuevo que llega, debe a lo sumo esperar todos los procesos incluídos anteriormente, y esa suma es la mínima posible.
+		Resultados analisis del scheduling producido: 87 (unidades de tiempo).
+	
+	Test "ts2":
+		Cada proceso se pasa a la cola "ready", al igual que en "ts1" con una diferencia de cinco unidades de tiempo. Sin embargo, el tiempo que cada uno necesita para realizar su tarea es inverso al del task set anterior. Si tuvieramos la cola completa sin procesar, podríamos observar que el costo de tiempo es decreciente a medida que recorremos la cola. Esto produce que el waiting time aumente considerablemente, para cada proceso_i se deberá esperar los primeros i-1 procesos, los cuales poseen los i-1 valores más grandes... CONTINUAR
+		
+		Con una diferencia de 5 "nexts" entre cada una entran los procesos, cada uno entran con el tiempo para correr mayor q el siguiente, x lo tanto el wtime aumenta
 	-------------------------------------
 	Resultados analisis del scheduling producido:
 	tiempo de espera promedio: 192
