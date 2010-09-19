@@ -304,7 +304,8 @@ class TaskSet implements Iterable<Task> {
       TaskSet ej_1 = new TaskSet("ej_1");
       ej_1.add( new Task("P1", 10, 5) );
       ej_1.add( new Task("P2", 5,  5) );
-      ej_1.add( new Task("P3", 5,  6) );
+      //ej_1.add( new Task("P3", 5,  6) );
+      ej_1.add( new Task("P3", 5,  35) );
       return ej_1;
     }
 

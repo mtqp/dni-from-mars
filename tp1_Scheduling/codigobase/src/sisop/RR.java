@@ -83,82 +83,68 @@ class RR extends Scheduler {
       else
       {	
         // Agrega el 1er task de los listos
-        current_task = task_set.get( ready_tasks.getFirst() );
-        
+        current_task = task_set.get( ready_tasks.getFirst() ); 
+        current_quantum = 0;       
         // Lo elimina de listos
         ready_tasks.removeFirst();
-        //task switching hay q agregar , current quantum?!?!?
-        	
         /** -ejercicio 2: calcular el waiting time- **/
         current_task.wtime = current_time - current_task.rtime;
       }
     } 
     // Si hay algo corriendo
     else 
-    {	    
-/*System.out.println( "--------------------" + current_quantum );
-System.out.println( "Current time == " + current_time );
-System.out.println( "--------------------" + current_quantum );
-System.out.println( "Q:" + current_quantum );
-
-System.out.println( "P:" + current_task.name );
-System.out.println( "	finished task size: " + finished_tasks.size() );
-System.out.println( "	ready task size: " + ready_tasks.size() );*/
-
+    {
       // Incrementa el quantum que estuvo el proceso
       current_quantum++;
       
-      // Si terminó o se acabó el tiempo
-      if ( current_task.ttime == current_task.ptime || current_quantum==quantum ) 
+      // Si terminó de procesar
+      if( current_task.ttime == current_task.ptime )
       {
-        // Si terminó de procesar
-        if( current_task.ttime == current_task.ptime )
-        {
-//System.out.println( "-- FINISHED task --: " + current_task.name );
-          current_task.ftime = current_time;
-          
-          // Agrega la tarea a la lista de terminados
-          finished_tasks.addLast( current_task.name );
-          
-          // Hace el task switch
-          task_switching = 2;
-          current_quantum = 0;
-          ready_tasks.removeFirst();
-        }
-        // Si se acabó el tiempo y no es la última tarea, hago task switch
-        else if( ready_tasks.size()>1 )
-        {
-           // Se pasó de quantum lo paso al final de la cola, si no hay otro para ejecutar, lo dejo
-           //current_time   += 2;
-//System.out.println( "QUANTUM TIMEOUT task" + current_task.name );
-//System.out.println("	with task switching!!!!!!!!!");
-//System.out.println("==== ready_task before ADD ====" + ready_tasks);
-				  ready_tasks.addLast( current_task.name );
-//System.out.println("==== ready_task after ADD ====" + ready_tasks);
-				  task_switching = 2;
-				  current_quantum = 0;
-        }
+        current_task.ftime = current_time;
+        
+        // Agrega la tarea a la lista de terminados
+        finished_tasks.addLast( current_task.name );
 
-        // Si la lista de ready está vacía
-        if (ready_tasks.isEmpty()) 
+        System.out.println("Termina "+ current_task.name + ": " +  ready_tasks);
+        
+        current_task = null;
+
+        // Si no hay más tareas, termina
+        if( ready_tasks.isEmpty() ) 
         {
-//System.out.println("NO MORE READY TASKS ''' tasksetsize=" + task_set.size() + " & finishedtasksize=" + finished_tasks.size());
-          current_task = null;
-          // Si no hay más tareas, termina
-         	if (task_set.size()==finished_tasks.size())
+          if( task_set.size()==finished_tasks.size() )
          	  return null;
-         	// Si todavía hay sin procesar, devuelve IDLE
-         	else
-         	  return IDLE_TASK;
         }
         // Si hay procesos listos
         else
         {
+          // Hace el task switch
+          task_switching = 1;
+          current_quantum = 0;
+          
           current_task = task_set.get( ready_tasks.getFirst() );
+          ready_tasks.removeFirst();
           /** -ejercicio 2: calcular el waiting time- **/
           current_task.wtime = current_time - current_task.rtime;
         }
+       	// Si todavía hay sin procesar, devuelve IDLE
+        return IDLE_TASK;
       }
+      // Si se acabó el tiempo y no es la última tarea, hago task switch
+      else if( current_quantum==quantum )
+      {
+        if( !ready_tasks.isEmpty() )
+        {
+			    ready_tasks.addLast( current_task.name );
+			    task_switching = 1;
+			    current_quantum = 0;
+			    current_task = null;
+			    return IDLE_TASK;
+				}
+				else
+			    current_quantum = 0;
+      }
+
     }
     
     current_task.ttime++;
