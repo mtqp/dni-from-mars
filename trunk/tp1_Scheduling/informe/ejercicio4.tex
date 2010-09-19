@@ -50,7 +50,20 @@
 	En este caso, el \kw{WTP} obtenido para \cmd{FCFS} fue de 192 unidades de tiempo, mientras que para \cmd{SJF} fue de 122 unidades de tiempo. Esta diferencia se debe a que los procesos tienen duración decreciente a medida de que están listos, por lo tanto el orden según su duración es inverso al orden de llegada. Como la primera tarea del \kw{taskset} tiene una duración de 80 y el resto de las tareas tiene un tiempo de liberación menor a 80, todas las tareas restantes están listas para ser ejecutadas antes de que la primera tarea termine. Esto implica que el tiempo de espera con \cmd{SJF} para las últimas 7 tareas es el óptimo, porque ejecuta primero las de menor duración.
 \end{subsection}
 
+\begin{subsection}{Análisis de los resultados de \cmd{ts4}}
+	Con \cmd{FCFS}, el \kw{WTP} es de 77 unidades de tiempo, mientras que para \cmd{SJF} fue de 58 unidades de tiempo. La mejora de tiempo por parte de \cmd{SJF} viene dada porque se ordena tanto en el instante 0 como en el instante 100 los procesos que pasan a estar en estado "ready" de menor a mayor (sobre la variable de la cantidad de tiempo que necesita el cpu para terminar de procesar). Cabe aclarar que debido a nuestra implementación, el orden en el que se agregan los tasks que ingresan a ready en un tiempo t, vienen prefijada en el scheduling \cmd{FCFS} de la misma forma que los task sets anteriores.
+\end{subsection}
 
+\begin{subsection}{Análisis de los resultados de \cmd{ts5}}
+	El task set cinco, modela los procesos entre un servidor, y varios clientes. Los valores de \kw{WTP} son para \cmd{FCFS} de 144 unidades de tiempo y para \cmd{SJF} de 56. Si bien a primera vista consideramos que conviene usar el scheduling implementado con el algoritmo de \cmd{SJF}, al analizar el output otorgado por la corrida del programa notamos que, el orden en el que ejecutan los procesos no es un orden que modele la relación entre un servidor y clientes. La base de datos como el servidor son apagados previo al encendido, y finalmente se corren los clientes. Podemos decir entonces que no es correcto, ya que el servidor, una vez que todos los clientes son procesados debería apagarse y esto no ocurre. 
+	En \cmd{FCFS} no ocurre este problema, ya que debido a su implementación inicialmente los procesos son ingresados a la cola en el orden correcto. Si no supiéramos en qué momento ha de ingresar un nuevo proceso, podría llegar a pasar una situación similar al caso que tenemos en \cmd{SJF} con este task set.
+	Es importante saber cuál es el entorno en el que los procesos van a correr para poder decidir entonces qué tipo de scheduling se usa, intentando maximizar la performance, sin obtener resultados inconsistentes.
+\end{subsection}
+
+\begin{subsection}{Análisis de los resultados de \cmd{ts6}}
+	El task set seis modela también un servidor con varios clientes, en particular con dos clientes más que el task set anterior. El \kw{WTP} de \cmd{FCFS} es de 176 unidades de tiempo, contra 57 unidades de \cmd{SJF}. Si bien uno tendería a decir que en materia de performance el task set con el scheduling \cmd{SJF} es mejor, pero incurriríamos en el mismo error que con el task set número cinco. En este, se ejecutan clientes antes de que se inicialice la base de datos y el servidor.
+	Como conclusiones, cabe destacar las mismas consideraciones que en el task set 5.
+\end{subsection}
 
 \end{section}
 
