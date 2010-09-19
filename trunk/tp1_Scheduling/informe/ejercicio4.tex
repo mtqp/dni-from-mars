@@ -1,49 +1,55 @@
 
 \begin{section}{Ejercicio 4}
 
-	En los casos de los test "ts*", las colas nunca se encuentran vacías, por lo tanto no encontramos ningún IDLE_TASK. Siempre existe un proceso que se inicia en el instante cero, es decir en el mismo momento que el scheduler empieza a funcionar. La política "first come, first served" toma el primer proceso que se encuentra en la lista y lo procesa, sin aplicar ningún tipo de política de desalojo. El CPU queda ocupado con la tarea tomada desde la cola hasta que el proceso decida irse (termine). Si bien no está contemplado la existencia de entrada salida en este trabajo práctico, si así hubiese sido, el cpu esperaría sin realizar ninguna operación hasta que el proceso que está en el haya terminado con su E/S y pueda continuar ejecutando.
+	%En los casos de los \kw{tasksets} \cmd{ts*}, las colas nunca se encuentran vacías, por lo tanto no encontramos ningún \code{IDLE\_TASK}. Siempre existe un proceso que se inicia en el instante cero, es decir en el mismo momento que el \kw{scheduler} empieza a funcionar. La política \kw{First Come, First Served} toma el primer proceso que se encuentra en la lista y lo procesa, sin aplicar ningún tipo de política de desalojo. El \cmd{CPU} queda ocupado con la tarea tomada desde la cola hasta que el proceso termine. 
+	%Si bien no está contemplada la existencia de \kw{Entrada/Salida} en los primeros dos algoritmos, si así hubiese sido, el \cmd{CPU} esperaría sin realizar ninguna operación hasta que el proceso que está en el haya terminado con su E/S y pueda continuar ejecutando.
+	%A continuación, se detalla el análisis de los \kw{tasksets} dados por la cátedra:
+%Análisis FCFS:
+%	Test "ts1":
+%				Resultados analisis del scheduling producido: 87 (unidades de tiempo).
+%	
+%	Test "ts2":
+%		Cada proceso se pasa a la cola "ready", al igual que en "ts1" con una diferencia de cinco unidades de tiempo. Sin embargo, el tiempo que cada uno necesita para realizar su tarea es inverso al del task set anterior. Si tuvieramos la cola completa sin procesar, podríamos observar que el costo de tiempo es decreciente a medida que recorremos la cola. Esto produce que el waiting time aumente considerablemente, para cada proceso_i se deberá esperar los primeros i-1 procesos, los cuales poseen los i-1 valores más grandes... CONTINUAR
+%	
+%		Con una diferencia de 5 "nexts" entre cada una entran los procesos, cada uno entran con el tiempo para correr mayor q el siguiente, x lo tanto el wtime aumenta
+%	-------------------------------------
+%	Resultados analisis del scheduling producido:
+%	tiempo de espera promedio: 192
+%	-------------------------------------
+%tres:
+%	Todos comienzan (ready) en el momento cero. decrecen dos, uno x, crecen dos
+%	-------------------------------------
+%	Resultados analisis del scheduling producido:
+%	tiempo de espera promedio: 127
+%	-------------------------------------
+%cuatro:
+%	Cuatro inician en cero, cuatro en el tiempo 100, x lo tanto claro el wtime de esos cuatro posiblemente sea menos, mismo tiempo de cada task
+%	-------------------------------------
+%	Resultados analisis del scheduling producido:
+%	tiempo de espera promedio: 77
+%	-------------------------------------
+%cinco:
+%	Server, todos inician en tiempo cero, inicia bd, server, testeo, acepta clientes, apaga servidor, apaga bd
+%	cada cliente tiene mucha diferencia en cantidad de tiempo q usa
+%	-------------------------------------
+%	Resultados analisis del scheduling producido:
+%	tiempo de espera promedio: 144
+%	-------------------------------------
+%seis:
+%	mismo server con solo dos clientes mas de 10 y de 5 de gasto, y aumenta bastante mas el wtime.
+%	-------------------------------------
+%	Resultados analisis del scheduling producido:
+%	tiempo de espera promedio: 176
+%	-------------------------------------
 
-	A continuación, se detalla el análisis de los casos de pruebas que se dieron por la cátedra con sus respectivos tiempos de espera promedio ("waiting time).
-	
-Análisis FCFS:
-	Test "ts1":
-		El primer proceso se carga al mismo tiempo que se inicia el programa, y cada proceso pasa a estar en la cola de "ready", es decir en espera a que el procesador lo pueda atender, después de cinco unidades de tiempo (en relación a la llegada a la cola del proceso inmediatamente anterior).
-		Además, Este "set" posee procesos que se agregan de forma tal que la cantidad de unidades de tiempo para su procesamiento es creciente. El tiempo de espera promedio entonces, se ve minimizado. La idea es que cada proceso nuevo que llega, debe a lo sumo esperar todos los procesos incluídos anteriormente, y esa suma es la mínima posible.
-		Resultados analisis del scheduling producido: 87 (unidades de tiempo).
-	
-	Test "ts2":
-		Cada proceso se pasa a la cola "ready", al igual que en "ts1" con una diferencia de cinco unidades de tiempo. Sin embargo, el tiempo que cada uno necesita para realizar su tarea es inverso al del task set anterior. Si tuvieramos la cola completa sin procesar, podríamos observar que el costo de tiempo es decreciente a medida que recorremos la cola. Esto produce que el waiting time aumente considerablemente, para cada proceso_i se deberá esperar los primeros i-1 procesos, los cuales poseen los i-1 valores más grandes... CONTINUAR
-		
-		Con una diferencia de 5 "nexts" entre cada una entran los procesos, cada uno entran con el tiempo para correr mayor q el siguiente, x lo tanto el wtime aumenta
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 192
-	-------------------------------------
-tres:
-	Todos comienzan (ready) en el momento cero. decrecen dos, uno x, crecen dos
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 127
-	-------------------------------------
-cuatro:
-	Cuatro inician en cero, cuatro en el tiempo 100, x lo tanto claro el wtime de esos cuatro posiblemente sea menos, mismo tiempo de cada task
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 77
-	-------------------------------------
-cinco:
-	Server, todos inician en tiempo cero, inicia bd, server, testeo, acepta clientes, apaga servidor, apaga bd
-	cada cliente tiene mucha diferencia en cantidad de tiempo q usa
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 144
-	-------------------------------------
-seis:
-	mismo server con solo dos clientes mas de 10 y de 5 de gasto, y aumenta bastante mas el wtime.
-	-------------------------------------
-	Resultados analisis del scheduling producido:
-	tiempo de espera promedio: 176
-	-------------------------------------
+\begin{subsection}{Análisis de los resultados de \cmd{ts1}}
+	El valor de \kw{Waiting Time Promedio (WTP)} obtenido tanto para \cmd{FCFS} como para \cmd{SJF} fue de 87 unidades de tiempo. Esto se debe a que los procesos tienen duración creciente a medida de que llegan a la cola, por lo tanto no difiere el orden según duración al orden de llegada. Esto implica que el tiempo de espera en ambos casos es el óptimo, ya que cada proceso nuevo que llega debe a lo sumo esperar a que terminen todos los procesos incluídos anteriormente, que son los de menor duración.
+\end{subsection}
+
+\begin{subsection}{Análisis de los resultados de \cmd{ts2}}
+	En este caso, el \kw{WTP} obtenido para \cmd{FCFS} fue de 192 unidades de tiempo, mientras que para \cmd{SJF} fue de 122 unidades de tiempo. Esta diferencia se debe a que los procesos tienen duración decreciente a medida de que están listos, por lo tanto el orden según su duración es inverso al orden de llegada. Como la primera tarea del \kw{taskset} tiene una duración de 80 y el resto de las tareas tiene un tiempo de liberación menor a 80, todas las tareas restantes están listas para ser ejecutadas antes de que la primera tarea termine. Esto implica que el tiempo de espera con \cmd{SJF} para las últimas 7 tareas es el óptimo, porque ejecuta primero las de menor duración.
+\end{subsection}
+
 
 
 \end{section}
