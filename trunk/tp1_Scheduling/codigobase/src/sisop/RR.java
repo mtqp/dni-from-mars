@@ -107,12 +107,12 @@ class RR extends Scheduler {
       
     }
 
-    
+    /*
     System.out.println( "Time: " + current_time + " | Quantum: " + (current_quantum) );
     System.out.println( "Running: " + (current_task==null?"IDLE":current_task.name) );
     System.out.println( "New: " + newly_released_tasks );
     System.out.println( "Ready: " + ready_tasks + "\n-----------" );
-    
+    */
 
     if( current_task == null )
     {
