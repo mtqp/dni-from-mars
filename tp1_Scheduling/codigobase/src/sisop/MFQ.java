@@ -2,6 +2,8 @@ package sisop;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Random;
+import java.util.Iterator;
 import java.io.*;
 
 /**
@@ -11,6 +13,7 @@ import java.io.*;
 class MFQ extends Scheduler {
 
   private LinkedList<String> finished_tasks;
+  private LinkedList<String> blocked_tasks;
   private LinkedList<String> LPQ; // cola de baja  prioridad
   private LinkedList<String> MPQ; // cola de media prioridad
   private LinkedList<String> HPQ; // cola de alta  prioridad
@@ -21,9 +24,6 @@ class MFQ extends Scheduler {
   private int quantum_high   =  5;
   private int quantum_medium = 15;
   private int quantum_low    = 45;
-  /*private int quantum_high   = 1;
-  private int quantum_medium = 2;
-  private int quantum_low    = 3;*/
 
   private int quantum        =  0;
 
@@ -40,6 +40,7 @@ class MFQ extends Scheduler {
       throw new IllegalStateException("Cannot schedule a task_set with release time<0");
 
     finished_tasks = new LinkedList<String>();
+    blocked_tasks  = new LinkedList<String>();
     
     HPQ = new LinkedList<String>();
     MPQ = new LinkedList<String>();
@@ -61,6 +62,9 @@ class MFQ extends Scheduler {
     {
       HPQ.addAll(newly_released_tasks);
     }
+    
+    // Verifica si hay algún proceso que terminó I/O
+    check_blocked();
 
     if(task_switching > 0)
     {
@@ -72,14 +76,15 @@ class MFQ extends Scheduler {
     // Si no hay ningún proceso ejecutándose, busca el próximo a ejecutar
     if( current_task==null ) 
     {
-      current_task = get_next_task(false,false);
+      current_task = get_next_task(false,false,false);
     }
     // Si hay un proceso en ejecución
     else
     {
+      
       // Incrementa el quantum que estuvo el proceso actual
       current_quantum++;
-      
+            
       // Si el proceso terminó
       if( current_task.ttime == current_task.ptime )
       {
@@ -93,25 +98,50 @@ class MFQ extends Scheduler {
         if( task_set.size()==finished_tasks.size() )
           return null;
       
-        current_task = get_next_task(true,true);
+        current_task = get_next_task(true,true,false);
       
       }
       // Si se acabó el quantum
       else if( current_quantum==quantum )
       {
-        current_task = get_next_task(true,false);
+        current_task = get_next_task(true,false,false);
+      }
+      // Decide si el proceso se bloquea
+      else if( current_task.ttime < current_task.ptime-1 && decide_io() )
+      {
+        blocked_tasks.addLast( current_task.name );
+        current_task.ttime++;
+        current_task = get_next_task(true,false,true);
       }
       
     }
 
-    /*
-    System.out.println( "Time: " + current_time + " | Quantum: " + (current_quantum) );
+    /*System.out.println( "Time: " + current_time + " | Quantum: " + (current_quantum) );
     System.out.println( "Running: " + (current_task==null?"IDLE":current_task.name) );
+    System.out.println( "Blocked: " + blocked_tasks );
+    System.out.println( "Remaining: [" );
+    if( current_task != null )
+      System.out.print(current_task.name + ": " + (current_task.ptime-current_task.ttime) + ", ");
+    for( String t: HPQ )
+    {
+      Task task = task_set.get(t);
+      System.out.print(task.name + ": " + (task.ptime-task.ttime) + ", ");
+    }
+    for( String t: MPQ )
+    {
+      Task task = task_set.get(t);
+      System.out.print(task.name + ": " + (task.ptime-task.ttime) + ", ");
+    }
+    for( String t: LPQ )
+    {
+      Task task = task_set.get(t);
+      System.out.print(task.name + ": " + (task.ptime-task.ttime) + ", ");
+    }
+    System.out.println( "]" );
     System.out.println( "New: " + newly_released_tasks );
     System.out.println( "HPQ: " + HPQ );
     System.out.println( "MPQ: " + MPQ );
-    System.out.println( "LPQ: " + LPQ + "\n-----------" );
-    */
+    System.out.println( "LPQ: " + LPQ + "\n-----------" );*/
 
     if( current_task == null )
     {
@@ -125,13 +155,18 @@ class MFQ extends Scheduler {
     
   }
 
-  private Task get_next_task(boolean task_switch, boolean finished)
+  private Task get_next_task(boolean task_switch, boolean finished, boolean blocked)
   {
       current_quantum = 0;
       
       if( task_switch )
       {
-        if( !finished )
+        if( blocked )
+        {
+          if( finished_tasks.size() == task_set.size()-1 )
+            return null;
+        }
+        else if( !finished )
         {
           if( finished_tasks.size() == task_set.size()-1 )
             return current_task;
@@ -185,6 +220,43 @@ class MFQ extends Scheduler {
         current_task.wtime = current_time - current_task.rtime;
   
       return current_task;
+  }
+  
+  private boolean decide_io()
+  {
+    Random  r     = new Random();
+    boolean block = r.nextInt(9)==0;
+    if( block )
+    {
+      // Establece el tiempo de bloqueo
+      current_task.btime  = 1+r.nextInt(quantum-1);
+      if( current_queue == LPQ )
+      {
+        current_task.bqueue = MPQ;
+      }
+      else
+      {
+        current_task.bqueue = HPQ;
+      }
+      //System.out.println( ">>> Bloquea " + current_task.name + " " + current_task.btime );
+      
+    }
+    return block;
+  }
+
+  private void check_blocked()
+  {
+    for( Iterator<String> it = blocked_tasks.iterator() ; it.hasNext(); )
+    {
+      Task task = task_set.get( it.next() );
+      if( task.btime == 0 )
+      {
+        it.remove();
+        task.bqueue.addLast( task.name );
+      }
+      else
+        task.btime--;
+    }
   }
 
 }
