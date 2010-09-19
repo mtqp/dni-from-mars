@@ -1,5 +1,7 @@
 package sisop;
 
+import java.util.LinkedList;
+
 /**
  * Representa una Tarea a ser ejecutada por un Scheduler.
  * La tarea contiene informacion conocida al momento de su 
@@ -49,6 +51,18 @@ class Task {
    */
   int wtime = 0; // waiting time for this task
 
+  /**
+   * Blocking Time: 
+   * Tiempo de espera para que termine E/S. Inicialmente
+   * vale 0.
+   */
+  int btime = 0; // waiting time for this task
+  
+  /**
+   * Blocked Queue: 
+   * Cola en la que vuelve cuando se desbloquea
+   */ 
+  LinkedList<String> bqueue = null;
 
   /**
    * Construye una nueva tarea definiendo su
