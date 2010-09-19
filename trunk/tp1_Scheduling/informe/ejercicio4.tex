@@ -1,7 +1,46 @@
 
 \begin{section}{Ejercicio 4}
 
-bla bla bla
+En los casos de los test "ts*", las colas nunca se encuentran vacías
+Análisis FCFS:
+	Test UNO:
+		Como la cola NUNCA está vacía, siempre puede estar ejecutando un proceso, como el tiempo de cada proceso en ts1 es creciente, eso ayuda para bajar el tiempo de espera.
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 87
+	-------------------------------------
+dos:
+	Con una diferencia de 5 "nexts" entre cada una entran los procesos, cada uno entran con el tiempo para correr mayor q el siguiente, x lo tanto el wtime aumenta
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 192
+	-------------------------------------
+tres:
+	Todos comienzan (ready) en el momento cero. decrecen dos, uno x, crecen dos
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 127
+	-------------------------------------
+cuatro:
+	Cuatro inician en cero, cuatro en el tiempo 100, x lo tanto claro el wtime de esos cuatro posiblemente sea menos, mismo tiempo de cada task
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 77
+	-------------------------------------
+cinco:
+	Server, todos inician en tiempo cero, inicia bd, server, testeo, acepta clientes, apaga servidor, apaga bd
+	cada cliente tiene mucha diferencia en cantidad de tiempo q usa
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 144
+	-------------------------------------
+seis:
+	mismo server con solo dos clientes mas de 10 y de 5 de gasto, y aumenta bastante mas el wtime.
+	-------------------------------------
+	Resultados analisis del scheduling producido:
+	tiempo de espera promedio: 176
+	-------------------------------------
+
 
 \end{section}
 
