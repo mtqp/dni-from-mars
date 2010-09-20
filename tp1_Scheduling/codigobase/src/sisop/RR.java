@@ -88,6 +88,7 @@ class RR extends Scheduler {
       {
         
         current_task.ftime = current_time;
+		current_task.wtime = current_task.ftime - current_task.rtime - current_time.ptime;
         
         // Agrega la tarea a la lista de terminados
         finished_tasks.addLast( current_task.name );
@@ -155,9 +156,6 @@ class RR extends Scheduler {
       // Quita el proceso a ejecutar de la cola de listos
       ready_tasks.removeFirst();
 
-      if( current_task.ttime == 0 )
-        current_task.wtime = current_time - current_task.rtime;
-  
       return current_task;
   }
 
