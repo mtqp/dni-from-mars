@@ -88,7 +88,7 @@ class RR extends Scheduler {
       {
         
         current_task.ftime = current_time;
-		current_task.wtime = current_task.ftime - current_task.rtime - current_time.ptime;
+		current_task.wtime = current_task.ftime - current_task.rtime - current_task.ptime;
         
         // Agrega la tarea a la lista de terminados
         finished_tasks.addLast( current_task.name );
