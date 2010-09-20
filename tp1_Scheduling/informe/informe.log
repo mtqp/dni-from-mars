@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2010.8.27)  19 SEP 2010 22:03
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2010.8.27)  19 SEP 2010 22:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -289,24 +289,24 @@ Overfull \hbox (41.25458pt too wide) in paragraph at lines 20--20
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <14.4> not available
 (Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 45.
 
-[1]) (./ejercicio5.tex) (./ejercicio6.tex [2]) [3] (./informe.aux) ) 
+[1]) (./ejercicio5.tex [2]) (./ejercicio6.tex [3]) [4] (./informe.aux) ) 
 Here is how much of TeX's memory you used:
  1059 strings out of 494999
  11794 string characters out of 1180816
- 66730 words of memory out of 3000000
+ 69730 words of memory out of 3000000
  4288 multiletter control sequences out of 15000+50000
  7657 words of font info for 28 fonts, out of 3000000 for 9000
  54 hyphenation exceptions out of 8191
- 24i,13n,27p,1634b,263s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share
-/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texl
-ive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/
-type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/public
-/amsfonts/cm/cmti12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
-m/cmtt12.pfb>
-Output written on informe.pdf (4 pages, 67800 bytes).
+ 24i,13n,27p,1617b,263s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/s
+hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fo
+nts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/pu
+blic/amsfonts/cm/cmti12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfon
+ts/cm/cmtt12.pfb>
+Output written on informe.pdf (5 pages, 73564 bytes).
 PDF statistics:
- 35 PDF objects out of 1000 (max. 8388607)
+ 38 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
