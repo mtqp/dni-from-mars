@@ -90,6 +90,7 @@ class MFQ extends Scheduler {
       {
         
         current_task.ftime = current_time;
+		current_task.wtime = current_time - current_task.rtime - current_task.ptime;
         
         // Agrega la tarea a la lista de terminados
         finished_tasks.addLast( current_task.name );
@@ -107,7 +108,7 @@ class MFQ extends Scheduler {
         current_task = get_next_task(true,false,false);
       }
       // Decide si el proceso se bloquea
-      else if( current_task.ttime < current_task.ptime-1 && decide_io() )
+      else if( false && current_task.ttime < current_task.ptime-1 && decide_io() )
       {
         blocked_tasks.addLast( current_task.name );
         current_task.ttime++;
@@ -215,9 +216,6 @@ class MFQ extends Scheduler {
 
       // Quita el proceso a ejecutar de la cola de listos
       current_queue.removeFirst();
-
-      if( current_task.ttime == 0 )
-        current_task.wtime = current_time - current_task.rtime;
   
       return current_task;
   }
