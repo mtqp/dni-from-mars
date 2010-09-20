@@ -1,7 +1,14 @@
 
 \begin{section}{Ejercicio 5}
 
-bla bla bla
+	Resultados y análisis de la corrida del scheduler \cmd{RR} en los tasks sets dados por la cátedra.
+	Aclaración: Para realizar el análisis se utilizará el quantum predeterminado dado por la materia.
+	Se implementó para obtener resultados más realistas, un retardo de dos unidades de tiempo al final de cada quantum consideradas como "context switch".
+
+	El tiempo de espera promedio para los tasks entre uno y cuatro es de entre 16 y 24 unidades de tiempo.
+	Vemos que el tiempo de espera es bajo. Se desconoce la funcionalidad específica de las tareas que comprenden estos sets, pero podemos notar algunas consideraciones. Mantener este valor bajo de espera promedio nos serviría si se necesita tener algún tipo de interacción con el usuario, notar que este valor de quantum provoca que continuamente se esté haciendo cambios de contextos, con un costo importante (alrededor del 30\% del tiempo que corresponde a la fracción 2/(quantum_para_cada_tarea + 2)*100).
+	El valor del quantum debe analizarse con gran detalle sabiendo la carga y cantidad de trabajos que tendría el CPU corriendo con Round Robin. Si este quantum disminuye aumenta el porcentaje de tiempo que gasta realizando cambio de contexto en pos de una sensación de fluidez si se trabaja en entorno interactivos, pero si se aumenta considerablemente nos acercamos más a tener un modelo de scheduler \cmd{FCFS} (el cual aumentaría el rendimiento si tuviéramos procesos batch).
+	Al igual que con el análisis del ejercicio cuatro, hemos notado la importancia de saber qué procesos son los que se están utilizando, para que el scheduler sea el más adecuando posible. En los tasks sets cuatro y cinco, si bien tenemos waiting times bajos (24 unidades y 31 respectivamente), no estamos modelando el problema original que es: iniciar una base de datos, iniciar el servidor, permitir que clientes se conecten; y una vez desconectados todos cerrar el servidor y la base de datos. Estos son pasos NO paralelizables ni intercambiables, es decir, no se puede conectar un cliente si todavía la base de datos no está inicializada, y no se puede usar un cliente si el servidor ya no existe. Round Robin otorga un quantum predefinido a cada proceso, y como en este caso, inicializar el servidor y base de datos cuesta más unidades de las otorgadas, por lo tanto estos procesos se completan después que cliente comienza a ejecutarse. Una buena solución a este problema, hubiera sido ejecutar de forma \cmd{FCFS} todos los procesos que inicializan el server, pudiendo así poder rotar entre los distintos clientes con política Round Robin, con un quantum suficientemente bueno para dar la sensación de continuidad y además no derrochar excesiva cantidad de tiempo realizando cambios de contexto. Notar que una vez que todos los usuarios hayan terminado de realizar sus tareas, debe aplicarse nuevamente un scheduler \cmd{FCFS} para una correcta finalización del server y la base de datos.
 
 \end{section}
 
