@@ -1,0 +1,11 @@
+
+\begin{section}{Ejercicio 7}
+
+\begin{subsection}{Breve comentario sobre simulación E/S}
+	Para poder simular E/S sobre cada proceso, en cada ciclo de ejecución, se genera un booleano aleatorio, el cual de ser verdadero (tiene 10\% de probabilidad) elije nuevamente de forma aleatorea, la cantidad de ciclos que permanerá realizando entrada/salida. El valor de bloqueado es un entero módulo quantum, es decir el módulo del quantum de la lista en la que se encontraba (high priority, medium, o low). Este proceso pasa a una lista de bloqueados.
+	Además, en cada iteración se recorre la lista de task bloqueadas, decrementando un atributo (btime = tiempo de bloqueo) en uno; si este valor se torna cero significa que el proceso terminó de hacer entrada salida, por lo tanto está listo para volver a ser encolado en alguna de las colas "ready". Dependiendo de en qué cola el proceso realizó entrada salida, una vez desbloqueado el task vuelve a otra o la misma. Si estaba en la cola de baja prioridad sube a la de media, y si estaba en la de media o la de alta, sube o se queda en la de alta.
+	Establecimos que un proceso que se encuentre realizando su último ciclo de procesamiento previo a terminar, no puede realizar entrada salida ya que debería estar realizando procedimientos para cerrarse.
+\end{subsection}
+
+\end{section}
+
