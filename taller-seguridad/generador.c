@@ -7,12 +7,15 @@
 int main(int argc, char** argv)
 {
 	//char pass[] = "De Sousa Bispo, Grosso";
+	char*pass;
 	if (argc == 1) 
 	{
-		printf("Uso: ./generador 'nombreAgenerarPass'");
-		return 0;
+		pass = "De Sousa Bispo, Grosso";
 	}
-	char*pass = argv[1];
+	else 
+	{
+		pass = argv[1];
+	}
 	char hash[32];
 	char buffer[128];
 	int i;
