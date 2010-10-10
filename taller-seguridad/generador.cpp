@@ -1,18 +1,22 @@
 
-#include<cstring>
-#include<cstdlib>
-#include<iostream>
-
-using namespace std;
+#include<string.h>
+#include<stdlib.h>
+#include "md5.h"
 
 int main(int argc, char** argv)
 {
 	int cantidad = atoi( argv[1] );
+	char hash[32];
+	char pass[] = "De Sousa Bispo, Grosso\0";
+	int i;
+	
+	md5_buf_to_hex(pass, sizeof(pass), hash);
 
-	for( int i = 0 ; i < cantidad ; i++ )
+	for( i = 0 ; i < cantidad ; i++ )
 	{
-		cout << (char)0xfa;
+		printf('A');
 	}
+	cout << hash;
 
 	return 0;
 }
