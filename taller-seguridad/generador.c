@@ -6,8 +6,9 @@
 
 int main(int argc, char** argv)
 {
+	//char pass[] = "De Sousa Bispo, Grosso";
+	char*pass = argv[1];
 	char hash[32];
-	char pass[] = "De Sousa Bispo, Grosso";
 	char buffer[128];
 	int i;
 	int l = strlen(pass);
@@ -23,10 +24,7 @@ int main(int argc, char** argv)
 	md5_buf_to_hex(buffer, 64, hash);
 	memcpy((char*)(buffer+96),hash,32);
 
-	// escribe el archivo
-	FILE* f = fopen("die","w+");
-	fwrite(buffer,sizeof(char),sizeof(buffer),f);
-	fclose(f);
+	fwrite(buffer,sizeof(char),sizeof(buffer),stdout);
 
 	return 0;
 }
