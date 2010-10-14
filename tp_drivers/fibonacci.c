@@ -18,23 +18,70 @@
 ////habria que ver que todos los includes son necesarios/////
 
 unsigned long fib_actual;
+unsigned long fib_previo;
 
+// Funciones de manejo del dispositivo en /dev
+static struct file_operations fops =
+{
+    .read    = device_read,
+    .open    = device_open,
+    //.write = device_write,
+    .release = device_release
+};
+
+
+//Inicializacion device
 static int __init fibonacci_init(void);
 static void __exit fibonacci_exit(void);
 
-/*static int device_open(struct inode *, struct file *);
+//OTHER FUNCTIONS
+static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
-static ssize_t device_read(struct file *, char *, size_t, loff_t *);*/
+static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 
+
+//Funciones auxiliares
+static void recalculate_fib();
 
 module_init(fibonacci_init);
 module_exit(fibonacci_exit);
 
+//Calcula el nuevo numero de fibonacci
+static void recalculate_fib(){
+	unsigned long swap;
+	swap		 = fib_actual;
+	fib_actual 	+= fib_previo;
+	fib_previo 	 = swap;
+}
+
+// Maneja aperturas del archivo
+static int device_open(struct inode *inode, struct file *file){
+        try_module_get(THIS_MODULE);
+        return SUCCESS;
+}
+
+// Maneja el evento de cierre del archivo
+static int device_release(struct inode *inode, struct file *file){
+        module_put(THIS_MODULE);
+        return SUCCESS;
+}
+
+//esta bien esto?
+static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t *offset){
+        recalculate_fib();
+        return fib_actual;
+}
+
+
+//Inicializa Fib
 static int __init fibonacci_init(void){
+	fib_actual = 1;
+	fib_previo = 0;
 	printk(KERN_ALERT "Modulo Fibonacci inicializado\n");
 	return 0;
 }
 
+//Destruye fib
 static void __exit fibonacci_exit(void){
 	printk(KERN_ALERT "Desintalando el modulo Fibonacci\n");
 }
@@ -42,40 +89,7 @@ static void __exit fibonacci_exit(void){
 /*static struct proc_dir_entry *procFile; // Informacion de nuestro archivo en /proc
 static int cantidadLecturas;
 static int Major; // Device major number
-// Funciones de manejo del dispositivo en /dev
-static struct file_operations fops =
-{
-        .read    = device_read,
-        .open    = device_open,
-        .release = device_release
-};
 
-// Maneja aperturas del archivo
-static int device_open(struct inode *inode, struct file *file)
-{
-        try_module_get(THIS_MODULE);
-        return SUCCESS;
-}
-
-// Maneja el evento de cierre del archivo
-static int device_release(struct inode *inode, struct file *file)
-{
-        module_put(THIS_MODULE);
-        return SUCCESS;
-}
-
-static ssize_t device_read(struct file *filp, char *buffer, size_t length,
-                                loff_t *offset)
-{
-        size_t i;
-        cantidadLecturas++;
-        for(i = 0; i < length; i++)
-        {
-                unsigned int r = random32();
-                buffer[i] = 'A' + r%26;
-        }
-        return length;
-}
 
 // Funciones de manejo de la entrada en /proc
 // Devuelve al usuario la cantidad de lecturas realizadas.
