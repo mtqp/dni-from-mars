@@ -15,20 +15,12 @@
 #include <linux/kdev_t.h>
 #include <asm/uaccess.h>
 
+#define procfs_name "fibonacci" // Nombre del archivo en /proc
+#define SUCCESS 	0
 ////habria que ver que todos los includes son necesarios/////
 
 unsigned long fib_actual;
 unsigned long fib_previo;
-
-// Funciones de manejo del dispositivo en /dev
-static struct file_operations fops =
-{
-    .read    = device_read,
-    .open    = device_open,
-    //.write = device_write,
-    .release = device_release
-};
-
 
 //Inicializacion device
 static int __init fibonacci_init(void);
@@ -38,10 +30,29 @@ static void __exit fibonacci_exit(void);
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-
+static ssize_t device_write(struct file *, char *, size_t);
 
 //Funciones auxiliares
-static void recalculate_fib();
+static void recalculate_fib(void);
+
+// Funciones de manejo del dispositivo en /dev
+static struct file_operations fops =
+{
+    .read    = device_read,
+    .open    = device_open,
+    .write 	 = device_write,
+    .release = device_release
+};
+
+//Misc Struct
+static struct miscdevice mi_dev = {
+	MI_MINOR,
+	"fib",
+	&fops
+};
+
+static struct proc_dir_entry *procFile; // Informacion de nuestro archivo en /proc
+
 
 module_init(fibonacci_init);
 module_exit(fibonacci_exit);
@@ -67,102 +78,62 @@ static int device_release(struct inode *inode, struct file *file){
 }
 
 //esta bien esto?
-static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t *offset){
+static ssize_t device_write(struct file *filp, char *buffer, size_t length){
         recalculate_fib();
-        return fib_actual;
+        buffer[0] = fib_actual;
+		return 1;
 }
 
+
+static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t *offset){
+	if(length==2){
+		fib_previo = buffer[0];
+		fib_actual = buffer[1];
+		return 2;
+	}
+	else {
+		printk(KERN_ALERT "Cantidad de parametros en Fibonacci incorrecto\n");
+		return 0;
+	}
+}
 
 //Inicializa Fib
 static int __init fibonacci_init(void){
 	fib_actual = 1;
 	fib_previo = 0;
-	printk(KERN_ALERT "Modulo Fibonacci inicializado\n");
+	
+    // Inicializamos el dispositivo en /dev   //che se puede suponer que lo registro correctamente?
+    misc_register(&mi_dev);
+
+    // Inicializamos el archivo en /proc
+   /* procFile = create_proc_entry(procfs_name, 0666,NULL);
+    if (procFile == NULL)
+    {
+            remove_proc_entry(procfs_name, procFile);
+            printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",procfs_name);
+            misc_deregister(&mi_dev);
+            return -ENOMEM;
+    }
+
+    procFile->read_proc  = procFileRead;
+    procFile->write_proc = procFileWrite;
+    procFile->owner      = THIS_MODULE;
+    procFile->mode       = S_IFREG | S_IRUGO | S_IWUGO; // rw-rw-rw-
+    procFile->uid        = 0;
+    procFile->gid        = 0;
+    procFile->size       = PROC_FILE_SIZE;
+* DEJAMOS SOLO ANDANDO EL /DEV */
+  	printk(KERN_ALERT "Modulo Fibonacci inicializado\n");
 	return 0;
+
+
 }
 
 //Destruye fib
 static void __exit fibonacci_exit(void){
+	misc_deregister(&mi_dev);
 	printk(KERN_ALERT "Desintalando el modulo Fibonacci\n");
 }
-
-/*static struct proc_dir_entry *procFile; // Informacion de nuestro archivo en /proc
-static int cantidadLecturas;
-static int Major; // Device major number
-
-
-// Funciones de manejo de la entrada en /proc
-// Devuelve al usuario la cantidad de lecturas realizadas.
-int procFileRead(char *buffer,char **buffer_location,off_t 
-                offset,  int bufferLength, int *eof, void *data)
-{
-        if (offset>=PROC_FILE_SIZE || offset < 0) return 0;
-        else 
-        {
-                sprintf(buffer,"%d",cantidadLecturas);
-//                *buffer_location = (char *)(&cantidadLecturas) + offset;
-                return PROC_FILE_SIZE-offset;
-        }
-}
-
-// Lee la semilla del usuario y la utiliza.
-int procFileWrite(struct file *file, const char *buffer, 
-                unsigned long count, void *data)
-{
-        u32 semilla = 0;
-        // No se modifica nada si el offset esta fuera de rango.
-        if (file->f_pos < 0 || file->f_pos >= PROC_FILE_SIZE) return count; 
-        copy_from_user(&semilla,buffer,min((unsigned long)sizeof(semilla),count));
-        srandom32(semilla);
-        printk(KERN_ALERT "Se cambia la semilla por %u\n",semilla);
-        return count;
-}
-
-
-static int __init proba_init()
-{
-        printk(KERN_ALERT "Se carga el modulo probabilidad\n");
-        cantidadLecturas = 0;
-        srandom32(SEMILLA_DEFAULT);
-
-        // Inicializamos el dispositivo en /dev
-        Major = register_chrdev(0,DEVICE_NAME,&fops);
-        if (Major < 0)
-        {
-                printk(KERN_ALERT "Registering char device failed with %d\n",Major);
-                return Major;
-        }
-        printk(KERN_ALERT "Se registro el driver con Major number = %d\n",Major);
-
-        // Inicializamos el archivo en /proc
-        procFile = create_proc_entry(procfs_name, 0666,NULL);
-        if (procFile == NULL)
-        {
-                remove_proc_entry(procfs_name, procFile);
-                printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",procfs_name);
-                unregister_chrdev(Major, DEVICE_NAME);
-                return -ENOMEM;
-        }
-
-        procFile->read_proc  = procFileRead;
-        procFile->write_proc = procFileWrite;
-        procFile->owner      = THIS_MODULE;
-        procFile->mode       = S_IFREG | S_IRUGO | S_IWUGO; // rw-rw-rw-
-        procFile->uid        = 0;
-        procFile->gid        = 0;
-        procFile->size       = PROC_FILE_SIZE;
-
-        return SUCCESS;
-}
-
-
-static void __exit proba_exit()
-{
-        printk(KERN_ALERT "Se descarga el modulo probabilidad\n");
-        remove_proc_entry(procfs_name,procFile);
-        unregister_chrdev(Major,DEVICE_NAME);
-}
-*/
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Mariano De Sousa Bispo, Daniel Grosso");
