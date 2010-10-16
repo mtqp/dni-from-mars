@@ -32,7 +32,7 @@ static void __exit fibonacci_exit(void);
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static ssize_t device_write(struct file *, const char *, size_t,loff_t * off);
+static ssize_t device_write(struct file *, char *, size_t,loff_t * off);
 
 //Funciones auxiliares
 static void recalculate_fib(void);
@@ -41,25 +41,26 @@ static void recalculate_fib(void);
 static struct file_operations fops =
 {
     .read    = device_read,
-    .open    = device_open,
     .write 	 = device_write,
+    .open    = device_open,    
     .release = device_release
 };
 
 //Misc Struct
 static struct miscdevice mi_dev = {
-	MI_MINOR,
+//PUTEA ACA NO ENTIENOD XQ CARAJO XQ SI LA DECLARAS AFUERA TBM PUTEA!
+	int MI_MINOR,
 	"fib",
 	&fops
 };
 
 static struct proc_dir_entry *procFile; // Informacion de nuestro archivo en /proc
 
-
 module_init(fibonacci_init);
 module_exit(fibonacci_exit);
 
 //Calcula el nuevo numero de fibonacci
+///HEMOS DE CHEUQEAR SI CUANDO NOS PASAN DOS NUMEROS, PERTENECEN REALMENTE A LA SUCESION DE FIBONACCI?
 static void recalculate_fib(){
 	unsigned long swap;
 	swap		 = fib_actual;
@@ -80,7 +81,7 @@ static int device_release(struct inode *inode, struct file *file){
 }
 
 //esta bien esto?
-static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t * off){
+static ssize_t device_write(struct file *filp, char *buffer, size_t length, loff_t * off){
         recalculate_fib();
         buffer[0] = fib_actual;
 		return 1;
@@ -142,5 +143,3 @@ static void __exit fibonacci_exit(void){
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Mariano De Sousa Bispo, Daniel Grosso");
 MODULE_DESCRIPTION("Calcula Fibonacci");
-
-
