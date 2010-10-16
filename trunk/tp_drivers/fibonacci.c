@@ -15,6 +15,8 @@
 #include <linux/kdev_t.h>
 #include <asm/uaccess.h>
 
+#include <linux/miscdevice.h>
+
 #define procfs_name "fibonacci" // Nombre del archivo en /proc
 #define SUCCESS 	0
 ////habria que ver que todos los includes son necesarios/////
@@ -30,7 +32,7 @@ static void __exit fibonacci_exit(void);
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static ssize_t device_write(struct file *, char *, size_t);
+static ssize_t device_write(struct file *, const char *, size_t,loff_t * off);
 
 //Funciones auxiliares
 static void recalculate_fib(void);
@@ -78,7 +80,7 @@ static int device_release(struct inode *inode, struct file *file){
 }
 
 //esta bien esto?
-static ssize_t device_write(struct file *filp, char *buffer, size_t length){
+static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t * off){
         recalculate_fib();
         buffer[0] = fib_actual;
 		return 1;
@@ -103,7 +105,9 @@ static int __init fibonacci_init(void){
 	fib_previo = 0;
 	
     // Inicializamos el dispositivo en /dev   //che se puede suponer que lo registro correctamente?
-    misc_register(&mi_dev);
+    if(misc_register(&mi_dev)!=0) {
+    	printk(KERN_ALERT "Error creando MISC DEVICE en FIB");
+    }
 
     // Inicializamos el archivo en /proc
    /* procFile = create_proc_entry(procfs_name, 0666,NULL);
