@@ -22,11 +22,10 @@ unsigned long cantidad_lecturas;
 static int __init fibonacci_init(void);
 static void __exit fibonacci_exit(void);
 
-//OTHER FUNCTIONS
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static ssize_t device_write(struct file *, char *, size_t,loff_t * off);
+static ssize_t device_write(struct file *, const char *, size_t,loff_t *);
 
 //Funciones auxiliares
 static void recalculate_fib(void);
@@ -42,10 +41,6 @@ static struct file_operations fops =
 
 //Misc Struct
 static struct miscdevice mi_dev = {
-//PUTEA ACA NO ENTIENOD XQ CARAJO XQ SI LA DECLARAS AFUERA TBM PUTEA!
-// --> Porque no es una declaración esto, es una definición. Estás llenando 
-//     la instancia de la estructura miscdevice que se llama mi_dev.
-//     Como MI_MINOR no existe tira error
 	MISC_DYNAMIC_MINOR,  
 	"fibonacci",
 	&fops
@@ -67,43 +62,70 @@ static void recalculate_fib(){
 
 // Maneja aperturas del archivo
 static int device_open(struct inode *inode, struct file *file){
-        try_module_get(THIS_MODULE);
-        return SUCCESS;
+	try_module_get(THIS_MODULE);
+    return SUCCESS;
 }
 
 // Maneja el evento de cierre del archivo
 static int device_release(struct inode *inode, struct file *file){
-        module_put(THIS_MODULE);
-        return SUCCESS;
+    module_put(THIS_MODULE);
+    return SUCCESS;
 }
 
 //Leer de /dev/fib
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t * off){
-        cantidad_lecturas++;
-        recalculate_fib();
-        if(fib_actual < fib_previo){
-        	printk(KERN_ALERT "Se produjo BUFFER OVERFLOW en fib. Serán reinicializadas las variables\n");
-        	fib_actual = init_fib_actual;
-        	fib_previo = init_fib_previo;
-        	return 0;
-        } else {
-        	return sprintf(buffer,"%lu\n",fib_actual);
-        }
+    cantidad_lecturas++;
+    recalculate_fib();
+    if(fib_actual < fib_previo){
+    	printk(KERN_ALERT "Se produjo BUFFER OVERFLOW en fib. Serán reinicializadas las variables\n");
+      	fib_actual = init_fib_actual;
+      	fib_previo = init_fib_previo;
+      	return 0;
+    } else {
+      	return sprintf(buffer,"%lu\n",fib_actual);
+    }
 }
 
+unsigned long int getFirstNumber( const char* str, size_t length, unsigned int* digitos )
+{
+	int i,l=0,m=1;
+	unsigned long int res = 0;
 
-static ssize_t device_write(struct file *filp, char *buffer, size_t length,loff_t *offset){
-	// como mínimo tiene que ser "# #"
-	//printk(KERN_ALERT "fib buffer: %s\n", buffer);
-	if(length>3){
-		fib_previo = buffer[0];
-		fib_actual = buffer[1];
-		return 2;
+	// busca el primer no-número
+	while( l < length && (str[l]>='0' && str[l]<='9') )
+	{
+		l++;
+		m *= 10;
 	}
-	else {
+
+	for( i=0 ; i < l ; i++ )
+	{
+		m /= 10;
+		res += (str[i]-'0') * m;
+	}
+
+	if( digitos != NULL )
+		*digitos = l;
+
+	return res;
+}
+
+static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *data){
+	int i;
+	unsigned int digitos;
+	fib_previo = getFirstNumber(buffer, length, &digitos);
+	printk(KERN_ALERT "fib_viejo=%lu\n",fib_previo);
+
+/*	if( digitos+1 <= length )
+	{
 		printk(KERN_ALERT "Cantidad de parametros en Fibonacci incorrecto\n");
-		return 0;
-	}
+		return 1;
+	}*/
+
+	fib_actual = getFirstNumber(&buffer[digitos+1], length-(digitos+1), NULL);
+
+	// QUE DEBERIA DEVOLVER?????? <-----------
+	return 8;
 }
 
 //leer de /proc/fibocount
