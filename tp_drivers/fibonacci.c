@@ -111,21 +111,18 @@ unsigned long int getFirstNumber( const char* str, size_t length, unsigned int* 
 }
 
 static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *data){
-	int i;
 	unsigned int digitos;
 	fib_previo = getFirstNumber(buffer, length, &digitos);
-	printk(KERN_ALERT "fib_viejo=%lu\n",fib_previo);
 
-/*	if( digitos+1 <= length )
+	if( digitos+1 >= length )
 	{
 		printk(KERN_ALERT "Cantidad de parametros en Fibonacci incorrecto\n");
 		return 1;
-	}*/
+	}
 
 	fib_actual = getFirstNumber(&buffer[digitos+1], length-(digitos+1), NULL);
 
-	// QUE DEBERIA DEVOLVER?????? <-----------
-	return 8;
+	return 2*sizeof(unsigned long);
 }
 
 //leer de /proc/fibocount
