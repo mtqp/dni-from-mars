@@ -14,6 +14,8 @@
 
 unsigned long fib_actual;
 unsigned long fib_previo;
+unsigned long init_fib_actual;
+unsigned long init_fib_previo;
 
 //Inicializacion device
 static int __init fibonacci_init(void);
@@ -77,7 +79,14 @@ static int device_release(struct inode *inode, struct file *file){
 //esta bien esto?
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t * off){
         recalculate_fib();
-        return sprintf(buffer,"%lu\n",fib_actual);
+        if(fib_actual < fib_previo){
+        	printk(KERN_ALERT "Se produjo BUFFER OVERFLOW en fib. Serán reinicializadas las variables\n");
+        	fib_actual = init_fib_actual;
+        	fib_previo = init_fib_previo;
+        	return 0;
+        } else {
+        	return sprintf(buffer,"%lu\n",fib_actual);
+        }
 }
 
 
@@ -99,6 +108,8 @@ static ssize_t device_write(struct file *filp, char *buffer, size_t length,loff_
 static int __init fibonacci_init(void){
 	fib_actual = 1;
 	fib_previo = 0;
+	init_fib_actual = fib_actual;
+	init_fib_previo = fib_previo;
 	
     // Inicializamos el dispositivo en /dev   //che se puede suponer que lo registro correctamente?
     if(misc_register(&mi_dev)!=0) {
