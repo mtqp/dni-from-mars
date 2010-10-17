@@ -77,8 +77,7 @@ static int device_release(struct inode *inode, struct file *file){
 //esta bien esto?
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t * off){
         recalculate_fib();
-        buffer[0] = fib_actual;
-		return 1;
+        return sprintf(buffer,"%ld\n",fib_actual);
 }
 
 

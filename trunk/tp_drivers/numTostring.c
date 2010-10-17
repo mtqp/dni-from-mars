@@ -22,16 +22,11 @@ int main(int argc, char** argv){
 	char* num_string = malloc(really_big_buf);
 
 	//realizo conversion
-	if(num<10){
+	while(num>10){
 		assign_value(num_string, &counter_string_size, num);
+		num /= 10;
 	}
-	else {
-		while(num>10){
-			assign_value(num_string, &counter_string_size, num);
-			num /= 10;
-		}
-		assign_value(num_string, &counter_string_size, num);
-	}
+	assign_value(num_string, &counter_string_size, num);
 	
 	//Aplico reverso
 	char* without_shit_num_string = malloc(counter_string_size);
