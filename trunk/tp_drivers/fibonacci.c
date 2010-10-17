@@ -16,6 +16,7 @@ unsigned long fib_actual;
 unsigned long fib_previo;
 unsigned long init_fib_actual;
 unsigned long init_fib_previo;
+unsigned long cantidad_lecturas;
 
 //Inicializacion device
 static int __init fibonacci_init(void);
@@ -76,8 +77,9 @@ static int device_release(struct inode *inode, struct file *file){
         return SUCCESS;
 }
 
-//esta bien esto?
+//Leer de /dev/fib
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t * off){
+        cantidad_lecturas++;
         recalculate_fib();
         if(fib_actual < fib_previo){
         	printk(KERN_ALERT "Se produjo BUFFER OVERFLOW en fib. Serán reinicializadas las variables\n");
@@ -104,12 +106,19 @@ static ssize_t device_write(struct file *filp, char *buffer, size_t length,loff_
 	}
 }
 
+//leer de /proc/fibocount
+int procFileRead( char *buffer, char **buffer_location, off_t offset, int buffer_length, int *eof, void *data){
+   return sprintf(buffer, "Cantidad de lecturas a /dev/fibonacci: %lu\n", cantidad_lecturas);
+}
+
+
 //Inicializa Fib
 static int __init fibonacci_init(void){
 	fib_actual = 1;
 	fib_previo = 0;
 	init_fib_actual = fib_actual;
 	init_fib_previo = fib_previo;
+	cantidad_lecturas = 0;
 	
     // Inicializamos el dispositivo en /dev   //che se puede suponer que lo registro correctamente?
     if(misc_register(&mi_dev)!=0) {
@@ -117,23 +126,18 @@ static int __init fibonacci_init(void){
     }
 
     // Inicializamos el archivo en /proc
-/*    procFile = create_proc_entry(procfs_name, 0666,NULL);
+    procFile = create_proc_entry(procfs_name, 0666,NULL);
     if (procFile == NULL)
     {
             remove_proc_entry(procfs_name, procFile);
             printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",procfs_name);
-            misc_deregister(&mi_dev);
+            //misc_deregister(&mi_dev);
             return -ENOMEM;
     }
 
     procFile->read_proc  = procFileRead;
-    procFile->write_proc = procFileWrite;
-    procFile->owner      = THIS_MODULE;
-    procFile->mode       = S_IFREG | S_IRUGO | S_IWUGO; // rw-rw-rw-
-    procFile->uid        = 0;
-    procFile->gid        = 0;
-    procFile->size       = PROC_FILE_SIZE;
-*/
+//    procFile->owner      = THIS_MODULE;
+
   	printk(KERN_ALERT "Modulo Fibonacci inicializado\n");
 	return 0;
 
