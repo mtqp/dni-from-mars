@@ -8,7 +8,7 @@
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
 
-#define procfs_name "fibonacci" // Nombre del archivo en /proc
+#define procfs_name "fibocount" // Nombre del archivo en /proc
 #define SUCCESS 	0
 ////habria que ver que todos los includes son necesarios/////
 
@@ -46,7 +46,7 @@ static struct miscdevice mi_dev = {
 //     la instancia de la estructura miscdevice que se llama mi_dev.
 //     Como MI_MINOR no existe tira error
 	MISC_DYNAMIC_MINOR,  
-	"fib",
+	"fibonacci",
 	&fops
 };
 
@@ -117,7 +117,7 @@ static int __init fibonacci_init(void){
     }
 
     // Inicializamos el archivo en /proc
-   /* procFile = create_proc_entry(procfs_name, 0666,NULL);
+/*    procFile = create_proc_entry(procfs_name, 0666,NULL);
     if (procFile == NULL)
     {
             remove_proc_entry(procfs_name, procFile);
@@ -133,7 +133,7 @@ static int __init fibonacci_init(void){
     procFile->uid        = 0;
     procFile->gid        = 0;
     procFile->size       = PROC_FILE_SIZE;
-* DEJAMOS SOLO ANDANDO EL /DEV */
+*/
   	printk(KERN_ALERT "Modulo Fibonacci inicializado\n");
 	return 0;
 
