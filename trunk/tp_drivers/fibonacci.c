@@ -1,21 +1,12 @@
-#include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/kd.h>
-#include <linux/types.h>
-#include <linux/fcntl.h>
-#include <linux/ioctl.h>
-#include <linux/syscalls.h>
-#include <linux/proc_fs.h>
 #include <linux/fs.h>
-#include <linux/tty.h>
-#include <linux/vt_kern.h>
-#include <linux/console_struct.h>
-#include <linux/random.h>
-#include <linux/kdev_t.h>
-#include <asm/uaccess.h>
-
+#include <linux/init.h>
 #include <linux/miscdevice.h>
+#include <linux/module.h>
+#include <linux/vmalloc.h>
+#include <linux/time.h>
+#include <linux/proc_fs.h>
+#include <asm/uaccess.h>
 
 #define procfs_name "fibonacci" // Nombre del archivo en /proc
 #define SUCCESS 	0
@@ -49,7 +40,10 @@ static struct file_operations fops =
 //Misc Struct
 static struct miscdevice mi_dev = {
 //PUTEA ACA NO ENTIENOD XQ CARAJO XQ SI LA DECLARAS AFUERA TBM PUTEA!
-	int MI_MINOR,
+// --> Porque no es una declaración esto, es una definición. Estás llenando 
+//     la instancia de la estructura miscdevice que se llama mi_dev.
+//     Como MI_MINOR no existe tira error
+	MISC_DYNAMIC_MINOR,  
 	"fib",
 	&fops
 };
@@ -81,15 +75,17 @@ static int device_release(struct inode *inode, struct file *file){
 }
 
 //esta bien esto?
-static ssize_t device_write(struct file *filp, char *buffer, size_t length, loff_t * off){
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t * off){
         recalculate_fib();
         buffer[0] = fib_actual;
 		return 1;
 }
 
 
-static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t *offset){
-	if(length==2){
+static ssize_t device_write(struct file *filp, char *buffer, size_t length,loff_t *offset){
+	// como mínimo tiene que ser "# #"
+	//printk(KERN_ALERT "fib buffer: %s\n", buffer);
+	if(length>3){
 		fib_previo = buffer[0];
 		fib_actual = buffer[1];
 		return 2;
