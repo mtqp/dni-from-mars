@@ -1,0 +1,6 @@
+creamos una structura misc device y seteamos las operaciones de lectura, escritura y cerrado del dispositivo (en dev)
+creamos la funcion "recalculate_fib" q calcula a partir de los valores anteriores el nuevo numero de la serie de fibonacci (estos valores estan guardados en dos variables del programa)
+existe una variable q lleva cuenta de la cantidad de veces q se aplica la funcion de lectura
+decidimos llevar default la sucesion iniciada por los valores 0, 1. si se realiza la operacion write sobre el dispositivo, se modifica estos valores y la lectura posterior, los utilizara.
+existen ademas dos variables q resguardan los valores iniciales dados por write, en caso de existir overflow, es decir la suma de los dos numeros de fibonacci sobrepase el unsigned int se incluye al log una linea de overflow y se procede a reiniciar los valores en los iniciales.
+se creo una entrada de PROC WTFWTFWTF la cual se le permitio de hacer una lectura de la cantidad de pedidos 'read' al device el cual devuelve en el buffer de salida el valor de la variable unsigned long cantidad_lecturas;
