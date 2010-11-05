@@ -175,8 +175,7 @@ int main(void)
 	/// Aceptar conexiones entrantes.
 	socket_size = sizeof(remoto);
 	for(;;){		
-		if (-1 == (socketfd_cliente = 
-					accept(socket_servidor, (struct sockaddr*) &remoto, (socklen_t*) &socket_size)))
+		if (-1 == (socketfd_cliente = accept(socket_servidor, (struct sockaddr*) &remoto, (socklen_t*) &socket_size)))
 		{			
 			printf("!! Error al aceptar conexion\n");
 		}
@@ -187,5 +186,26 @@ int main(void)
 
 	return 0;
 }
+
+
+inicializo todo
+creo la matriz del aula... o ya existE?
+
+for(siga_con_gente_aula){
+	esperoquealguiense comunique conmigo
+	armo estructura apra pasar a thread
+	creo thread y se la paso
+}
+
+thread:
+	while(nosalga){
+		espero que me pida moverse para algun lado
+		hago un lock de la matriz (aula)
+			me fijo si puedo dejarlo moverse
+			si puedo, lo marco (ademas si es q me da una pos valida)
+		quito el lock
+		le aviso:
+			-- chequeo si salio y tiene la mascara y eso -- rompe el while eso
+	}
 
 
