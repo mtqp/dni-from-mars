@@ -1,5 +1,7 @@
+#include <pthread.h>
 #include <signal.h>
 #include <errno.h>
+#include <stdio.h>		//para hacer malloc
 
 #include "biblioteca.h"
 
@@ -94,52 +96,54 @@ void colocar_mascara(t_aula *el_aula, t_persona *alumno)
 }
 
 
-void *atendedor_de_alumno(int socket_fd, t_aula *el_aula)
+void *atendedor_de_alumno(void* tparams)//int socket_fd, t_aula *el_aula)
 {
+	tparams = (thread_params *) tparams; //no se si es necesario
 	t_persona alumno;
 	t_persona_inicializar(&alumno);
 	
-	if (recibir_nombre_y_posicion(socket_fd, &alumno) != 0) {
+	if (recibir_nombre_y_posicion(tparams->fd_alumno, &alumno) != 0) {
 		/* O la consola cortó la comunicación, o hubo un error. Cerramos todo. */
-		terminar_servidor_de_alumno(socket_fd, NULL, NULL);
+		terminar_servidor_de_alumno(tparams->fd_alumno, NULL, NULL);
 	}
 	
-	printf("Atendiendo a %s en la posicion (%d, %d)\n", 
-			alumno.nombre, alumno.posicion_fila, alumno.posicion_columna);
+	printf("Atendiendo a %s en la posicion (%d, %d)\n", alumno.nombre, alumno.posicion_fila, alumno.posicion_columna);
 		
-	t_aula_ingresar(el_aula, &alumno);
+	t_aula_ingresar(tparams->aula, &alumno);
 	
 	/// Loop de espera de pedido de movimiento.
 	for(;;) {
 		t_direccion direccion;
 		
 		/// Esperamos un pedido de movimiento.
-		if (recibir_direccion(socket_fd, &direccion) != 0) {
+		if (recibir_direccion(fd_alumno, &direccion) != 0) {
 			/* O la consola cortó la comunicación, o hubo un error. Cerramos todo. */
-			terminar_servidor_de_alumno(socket_fd, el_aula, &alumno);
+			terminar_servidor_de_alumno(tparams->fd_alumno, tparams->aula, &alumno);
 		}
 		
-		/// Tratamos de movernos en nuestro modelo
-		bool pudo_moverse = intentar_moverse(el_aula, &alumno, direccion);
+		/// Tratamos de movernos en nuestro modelo -- 	LO TIENE QUE HACER CON LOCK
+		bool pudo_moverse = intentar_moverse(tparams->aula, &alumno, direccion);
 
 		printf("%s se movio a: (%d, %d)\n", alumno.nombre, alumno.posicion_fila, alumno.posicion_columna);
 
 		/// Avisamos que ocurrio
-		enviar_respuesta(socket_fd, pudo_moverse ? OK : OCUPADO);		
+		enviar_respuesta(tparams->fd_alumno, pudo_moverse ? OK : OCUPADO);		
 		//printf("aca3\n");
 		
 		if (alumno.salio)
 			break;
 	}
 	
-	colocar_mascara(el_aula, &alumno);
+	//no hay q es q tiene q salir de a uno? -- habria q lockearlo
+	colocar_mascara(tparams->aula, &alumno);
 
-	t_aula_liberar(el_aula, &alumno);
-	enviar_respuesta(socket_fd, LIBRE);
+	t_aula_liberar(tparams->aula, &alumno);
+	enviar_respuesta(tparams->fd_alumno, LIBRE);
 	
 	printf("Listo, %s es libre!\n", alumno.nombre);
 	
 	return NULL;
+	//close thread
 
 }
 
@@ -174,21 +178,40 @@ int main(void)
 	
 	/// Aceptar conexiones entrantes.
 	socket_size = sizeof(remoto);
+	
+	//hay que crear el mutex
+	//mutex sarasa;
 	for(;;){		
 		if (-1 == (socketfd_cliente = accept(socket_servidor, (struct sockaddr*) &remoto, (socklen_t*) &socket_size)))
 		{			
 			printf("!! Error al aceptar conexion\n");
 		}
 		else
-			atendedor_de_alumno(socketfd_cliente, &el_aula);
+			//Create Thread!
+			pthread thread;
+			thread_params * params = (thread_params*) malloc(sizeof(thread_params));	//SHALL WE CHECK ERRORS?
+			params->fd_alumno 	= socketfd_cliente;
+			params->aula 		= &el_aula; 
+			//params->mute		= mutexSarasa
+			int ret_createThread;
+			ret_createThread = pthread_creat(&thread, NULL, atendedor_de_alumno, (void*) thread_params);
+			//exit thread?
 	}
 
 
 	return 0;
 }
 
+typedef struct {
+	int fd_alumno;
+	t_aula* aula;
+	//mutex mute:
+	//semaphore?
+	//algo mas?
+} thread_params;
 
-inicializo todo
+
+/*inicializo todo
 creo la matriz del aula... o ya existE?
 
 for(siga_con_gente_aula){
@@ -208,4 +231,4 @@ thread:
 			-- chequeo si salio y tiene la mascara y eso -- rompe el while eso
 	}
 
-
+*/
