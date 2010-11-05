@@ -192,7 +192,11 @@ int main(void)
 			thread_params * params = (thread_params*) malloc(sizeof(thread_params));	//SHALL WE CHECK ERRORS?
 			params->fd_alumno 	= socketfd_cliente;
 			params->aula 		= &el_aula; 
-			//params->mute		= mutexSarasa
+			//params->mute		= mutexSarasa			
+			/*estaria bueno q haya un mutex x cada posicion de la matriz
+			**cosa q si tenemos muchos cores, si hay dos threads q estan negociando el moverse a un posicion 
+			**distinta entre ellos puedan hacerlo
+			*/
 			int ret_createThread;
 			ret_createThread = pthread_creat(&thread, NULL, atendedor_de_alumno, (void*) thread_params);
 			//exit thread?
