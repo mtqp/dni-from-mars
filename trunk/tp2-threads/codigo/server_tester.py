@@ -7,8 +7,8 @@ from paises import *
 
 HOST = 'localhost'
 PORT = 5555
-CLIENTES = 1
-#CLIENTES = 22
+CLIENTES = 40
+#CLIENTES = 50
 
 class TCPFramer:
 	def __init__(self, socket):
@@ -80,8 +80,9 @@ class Cliente:
 		self.sock.close()
  
 clientes = []
+from random import randint
 for i in range(CLIENTES):
-	 c = Cliente(paises[i], (5,5))
+	 c = Cliente(paises[i], (randint(0,9),randint(0,9)))
 	 clientes.append(c)
 	 
 #for cliente in clientes:

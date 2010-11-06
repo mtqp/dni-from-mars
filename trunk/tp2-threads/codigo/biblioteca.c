@@ -111,7 +111,7 @@ int recibir_nombre_y_posicion(int socket_fd, t_persona *persona)
 		return -1;
 	}
 	
-	int res = sscanf(buf, "NOMBRE: %20s FILA: %d COLUMNA: %d\n",
+	int res = sscanf(buf, "NOMBRE: %s FILA: %d COLUMNA: %d\n",
 				persona->nombre,
 				&persona->posicion_fila,
 				&persona->posicion_columna);
