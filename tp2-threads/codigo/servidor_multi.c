@@ -65,55 +65,58 @@ t_comando intentar_moverse(t_aula *el_aula, t_persona *alumno, t_direccion dir)
 	int fila = alumno->posicion_fila;
 	int columna = alumno->posicion_columna;
 	alumno->salio = direccion_moverse_hacia(dir, &fila, &columna);
-
-	///char buf[STRING_MAXIMO];
-	///t_direccion_convertir_a_string(dir, buf);
-	///printf("%s intenta moverse hacia %s (%d, %d)... ", alumno->nombre, buf, fila, columna);
-	
 	
 	bool entre_limites = (fila >= 0) && (columna >= 0) &&
 	     (fila < ALTO_AULA) && (columna < ANCHO_AULA);
+	
+	//Si quiere moverse a una posición inválida, no tiene sentido continuar con la consulta
+	if( !entre_limites )
+		return false;
 
+	//Solo uno (thread) a la vez puede bloquear celdas
 	pthread_mutex_lock(&seccion_critica);
-//		printf("lock %d,%d\n",alumno->posicion_fila, alumno->posicion_columna);
+		printf("SC\n");
+		//Bloquea la celda en la que esta actualmente
 		pthread_mutex_lock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
+		printf("MA\n");
+		//Si no sale, bloquea la celda a la que va a moverse
 		if( !alumno->salio )
 		{
-//			printf("lock alumno no salio %d,%d\n",fila, columna);
 			pthread_mutex_lock(&mutex[fila][columna]);
+			printf("MP\n");
 		}
+	//Fin sección crítica (general)
 	pthread_mutex_unlock(&seccion_critica);
-		     
-	bool pudo_moverse = alumno->salio ||
-	    (entre_limites && el_aula->posiciones[fila][columna] < MAXIMO_POR_POSICION);
+	printf("USC\n");
 	
+	//Verifica posibilidad de moverse
+	bool pudo_moverse = alumno->salio || el_aula->posiciones[fila][columna] < MAXIMO_POR_POSICION;
 	
 	if (pudo_moverse)
 	{
+		//Si no salió, aumenta la cantidad de personas de la celda destino
 		if (!alumno->salio)
 		{
 			el_aula->posiciones[fila][columna]++;
 			pthread_mutex_unlock(&mutex[fila][columna]);
-//			printf("unlock pudo moverse & alumno no salio %d,%d\n",fila,columna);
+			printf("UMP\n");
 		}
+		//Como se movió, decrementa la posicion en la que estaba y libera la celda
 		el_aula->posiciones[alumno->posicion_fila][alumno->posicion_columna]--;
 		pthread_mutex_unlock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
-//		printf("unlock pudo moverse %d,%d\n",alumno->posicion_fila,alumno->posicion_columna);
+		printf("UMA\n");
 		alumno->posicion_fila = fila;
 		alumno->posicion_columna = columna;
 	}
 	else
 	{
+		//Libera los locks de memoria sin ningun cambio
+		pthread_mutex_unlock(&mutex[fila][columna]);
+		printf("UMP\n");
 		pthread_mutex_unlock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
-//		printf("unlock NO pudo moverse %d,%d\n",alumno->posicion_fila,alumno->posicion_columna);
+		printf("UMA\n");
 	}
 	
-	//~ if (pudo_moverse)
-		//~ printf("OK!\n");
-	//~ else
-		//~ printf("Ocupado!\n");
-
-
 	return pudo_moverse;
 }
 
@@ -125,9 +128,9 @@ void colocar_mascara(t_aula *el_aula, t_persona *alumno)
 }
 
 
-void *atendedor_de_alumno(void* params)//int socket_fd, t_aula *el_aula)
+void *atendedor_de_alumno(void* params)
 {
-	thread_params* tparams = (thread_params *) params; //no se si es necesario
+	thread_params* tparams = (thread_params *) params;
 	t_persona alumno;
 	t_persona_inicializar(&alumno);
 	
@@ -209,11 +212,11 @@ int main(void)
 	/// Aceptar conexiones entrantes.
 	socket_size = sizeof(remoto);
 	
-	//hay que crear el mutex
-	//mutex sarasa;
 	int i,j;
+	//Inicializa mutex global a todos los threads 
 	pthread_mutex_init(&seccion_critica, NULL);			
 	
+	//Crea un mutex por cada posicion de la matriz (cada mt² del aula)
 	for( i = 0 ; i < ALTO_AULA ; i++ )
 		for( j = 0 ; j < ANCHO_AULA ; j++ )	
 			pthread_mutex_init(&mutex[i][j], NULL);
@@ -225,23 +228,26 @@ int main(void)
 		}
 		else
 		{
-			//Create Thread!
+			//Guarda en Struct todos los parametros para pasarle al thread
 			pthread_t thread;
-			/*pthread_mutex_t mem_mutex[ANCHO_AULA][ALTO_AULA];
-			pthread_mutex_t seccion_critica;*/
-			thread_params * params  = (thread_params*) malloc(sizeof(thread_params));	//SHALL WE CHECK ERRORS?
+			thread_params * params  = (thread_params*) malloc(sizeof(thread_params));
+			//Chequeo error malloc
+			if(params == NULL)
+			{
+				printf("!! Error al crear estructura para thread\n");
+				close(socketfd_cliente);
+			}
 			params->fd_alumno 	    = socketfd_cliente;
 			params->aula 		    = &el_aula; 
-			/*params->mutex		    = &mem_mutex;
-			params->seccion_critica	= &seccion_critica;*/
-			/*estaria bueno q haya un mutex x cada posicion de la matriz
-			**cosa q si tenemos muchos cores, si hay dos threads q estan negociando el moverse a un posicion 
-			**distinta entre ellos puedan hacerlo
-			*/
-			int ret_createThread;
-			//Hay q chequear el error!
-			ret_createThread = pthread_create(&thread, NULL, atendedor_de_alumno, (void*) params);
-			//exit thread?
+
+			//Crea thread y chequea que la operación sea exitosa
+			if(pthread_create(&thread, NULL, atendedor_de_alumno, (void*) params) != 0)
+			{
+				printf("!! Error al crear thread\n");
+				close(socketfd_cliente);
+			} 
+			
+			
 		}
 	}
 
@@ -250,25 +256,3 @@ int main(void)
 	return 0;
 }
 
-
-/*inicializo todo
-creo la matriz del aula... o ya existE?
-
-for(siga_con_gente_aula){
-	esperoquealguiense comunique conmigo
-	armo estructura apra pasar a thread
-	creo thread y se la paso
-}
-
-thread:
-	while(nosalga){
-		espero que me pida moverse para algun lado
-		hago un lock de la matriz (aula)
-			me fijo si puedo dejarlo moverse
-			si puedo, lo marco (ademas si es q me da una pos valida)
-		quito el lock
-		le aviso:
-			-- chequeo si salio y tiene la mascara y eso -- rompe el while eso
-	}
-
-*/
