@@ -7,7 +7,7 @@ from paises import *
 
 HOST = 'localhost'
 PORT = 5555
-CLIENTES = 40
+CLIENTES = 2
 #CLIENTES = 50
 
 class TCPFramer:
@@ -82,7 +82,7 @@ class Cliente:
 clientes = []
 from random import randint
 for i in range(CLIENTES):
-	 c = Cliente(paises[i], (randint(0,9),randint(0,9)))
+	 c = Cliente(paises[i], (1,i))
 	 clientes.append(c)
 	 
 #for cliente in clientes:
