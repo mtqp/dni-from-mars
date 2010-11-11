@@ -1,0 +1,36 @@
+\documentclass[12pt,titlepage]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\func}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\kw}[1]{{\em #1}}
+
+\title{{\sc\normalsize Sistemas Operativos}\\{\bf Trabajo Práctico Nº2}}
+\author{Grupo 20\vspace*{3em} \\ 
+\begin{tabular}{lcr}
+Daniel Grosso & 694/08 & dgrosso@gmail.com\\
+Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
+\end{tabular}}
+\date{\vspace*{3em} \normalsize{Noviembre 2010}}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+\begin{section}{Explicación servidor\_multi}
+	Para realizar el \code{servidor\_multi} partimos del código del \code{servidor\_mono}. \code{A} diferencia con el \code{servidor\_mono}, para poder atender a varios clientes en simultáneo, el \code{el servidor\_multi} lanza un \kw{thread} por cada cliente atendido. Cada \kw{thread} ejecuta la función \func{atendedor\_de\_alumno} la cual representa al rescatista asignado a cada alumno. Para crear el \kw{thread} se llama a la función \func{pthread\_create} pasándole una estructura inicializada con los datos que necesita \func{atendedor\_de\_alumno} (\kw{file descriptor} del alumno y un puntero al aula). La función \func{atendedor\_de\_alumno} es exactamente igual a la misma función del \code{servidor\_mono}. Los únicos cambios fueron introducidos en la función \func{intentar\_moverse}. Ésta verifica que la petición a la que se quiere mover el cliente sea válida. En caso de ser válida, mueve a la persona de un casillero al otro, devolviendo el valor de verdadero. 
+	
+	Cada metro cuadrado del aula, es representando como una posición en una matriz, en esta, se guarda la cantidad de personas que se encuentran en ese lugar. Se deduce de esta estructura, que sólo dos posiciones por cada alumno son potencialmente modificables en cada pedido. Al poder moverse varios clientes en simultáneo, no se puede asegurar que no exista dos o más que deseen realizar operaciones sobre alguna posición particular de la matriz. Para solucionar este problema, hace falta bloquear tanto lectura como escritura de las celdas intervinientes en el movimientos, las cuales potencialmente, pueden ser todas. Hemos encontrado dos soluciones para este problema: la primera es tener un \kw{mutex} que restrinja el acceso a toda la matriz, es decir, sólo un \kw{thread} puede accederla a la vez. La segunda, consiste en tener un \kw{mutex} por cada celda, y que el \kw{thread} bloquee sólo las posiciones que utiliza (posición actual, posición destino). Esta última opción nos pareció la más adecuada, ya que a pesar de consumir una cantidad mayor de memoria, posibilita el procesamiento en paralelo y no bloquea la ejecución de los otros hilos si se reciben pedidos que involucran celdas disjuntas.
+	
+	Cada \kw{thread} entonces, inicialmente utilizará en cada pedido del cliente, dos \kw{mutex}, que luego de utilizarlos los libera. Esta solución no es libre de \kw{deadlock}. Supongamos que tenemos dos clientes \code{A} y \code{B} en celdas consecutivas. El cliente \code{A} pide moverse a la posición de \code{B}, y viceversa. Supongamos además que \code{A} se atiende primero, y según nuestro algoritmo, se bloquea la posición de \code{A}, seguido de esto, \code{B} es atendido y logra hacer un bloqueo de su posición actual. \code{A} entonces no podrá acceder a la posición de \code{B} ya que esta bloqueada, y a su vez, \code{B} no podrá acceder a la posición de \code{A} ya que también lo está. 
+	
+	Para solucionar este problema, forzamos mediante un nuevo \kw{mutex} a realizar ambos \kw{locks} de manera atómica. Esta nueva sección crítica comienza antes del primer \kw{lock} y termina después del segundo. Cada \kw{lock} fue estratégicamente ubicado de forma tal que no bloqueara posiciones que no utilizará luego.
+	
+	En conclusión, cada movimiento de los clientes, puede realizarse en simultáneo, con la excepción de que ambos deseen moverse y/o estén en una misma posición.
+	 
+\end{section}
+
+\end{document}
