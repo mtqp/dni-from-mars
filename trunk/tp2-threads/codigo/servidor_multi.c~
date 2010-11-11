@@ -19,7 +19,6 @@ typedef struct {
 typedef struct {
 	int fd_alumno;
 	t_aula* aula;	
-	//algo mas?
 } thread_params;
 
 void t_aula_iniciar_vacia(t_aula *un_aula)
@@ -70,24 +69,20 @@ t_comando intentar_moverse(t_aula *el_aula, t_persona *alumno, t_direccion dir)
 	     (fila < ALTO_AULA) && (columna < ANCHO_AULA);
 	
 	//Si quiere moverse a una posición inválida, no tiene sentido continuar con la consulta
-	if( !entre_limites )
+	if( !entre_limites && !alumno->salio )
 		return false;
 
 	//Solo uno (thread) a la vez puede bloquear celdas
 	pthread_mutex_lock(&seccion_critica);
-		printf("SC\n");
 		//Bloquea la celda en la que esta actualmente
 		pthread_mutex_lock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
-		printf("MA\n");
 		//Si no sale, bloquea la celda a la que va a moverse
 		if( !alumno->salio )
 		{
 			pthread_mutex_lock(&mutex[fila][columna]);
-			printf("MP\n");
 		}
 	//Fin sección crítica (general)
 	pthread_mutex_unlock(&seccion_critica);
-	printf("USC\n");
 	
 	//Verifica posibilidad de moverse
 	bool pudo_moverse = alumno->salio || el_aula->posiciones[fila][columna] < MAXIMO_POR_POSICION;
@@ -99,12 +94,10 @@ t_comando intentar_moverse(t_aula *el_aula, t_persona *alumno, t_direccion dir)
 		{
 			el_aula->posiciones[fila][columna]++;
 			pthread_mutex_unlock(&mutex[fila][columna]);
-			printf("UMP\n");
 		}
 		//Como se movió, decrementa la posicion en la que estaba y libera la celda
 		el_aula->posiciones[alumno->posicion_fila][alumno->posicion_columna]--;
 		pthread_mutex_unlock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
-		printf("UMA\n");
 		alumno->posicion_fila = fila;
 		alumno->posicion_columna = columna;
 	}
@@ -112,9 +105,7 @@ t_comando intentar_moverse(t_aula *el_aula, t_persona *alumno, t_direccion dir)
 	{
 		//Libera los locks de memoria sin ningun cambio
 		pthread_mutex_unlock(&mutex[fila][columna]);
-		printf("UMP\n");
 		pthread_mutex_unlock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
-		printf("UMA\n");
 	}
 	
 	return pudo_moverse;
@@ -153,7 +144,7 @@ void *atendedor_de_alumno(void* params)
 			terminar_servidor_de_alumno(tparams->fd_alumno, tparams->aula, &alumno);
 		}
 		
-		/// Tratamos de movernos en nuestro modelo -- 	LO TIENE QUE HACER CON LOCK
+		/// Tratamos de movernos en nuestro modelo
 		bool pudo_moverse = intentar_moverse(tparams->aula, &alumno, direccion);
 
 		printf("%s se movio a: (%d, %d)\n", alumno.nombre, alumno.posicion_fila, alumno.posicion_columna);
@@ -163,7 +154,10 @@ void *atendedor_de_alumno(void* params)
 		//printf("aca3\n");
 		
 		if (alumno.salio)
+		{
+			printf("do break\n");
 			break;
+		}
 	}
 	
 	colocar_mascara(tparams->aula, &alumno);
