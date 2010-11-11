@@ -7,8 +7,8 @@ from paises import *
 
 HOST = 'localhost'
 PORT = 5555
-CLIENTES = 1
-#CLIENTES = 22
+#CLIENTES = 1
+CLIENTES = 22
 
 class TCPFramer:
 	def __init__(self, socket):
