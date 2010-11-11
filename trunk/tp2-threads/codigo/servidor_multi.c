@@ -163,7 +163,10 @@ void *atendedor_de_alumno(void* params)
 		//printf("aca3\n");
 		
 		if (alumno.salio)
+		{
+			printf("do break\n");
 			break;
+		}
 	}
 	
 	colocar_mascara(tparams->aula, &alumno);
