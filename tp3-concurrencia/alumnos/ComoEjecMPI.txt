@@ -1,0 +1,48 @@
+SO 2do Cuatrimestre 2010  TP3 (MPI)
+-----------------------------------
+
+1- instalar los packages correspondientes, por ejemplo
+// Para MPICH1
+	$ sudo apt-get install mpich-bin
+	$ sudo apt-get install libmpich1.0-dev
+// Para MPICH2
+	$ sudo apt-get install mpich-mpd-bin
+	$ sudo apt-get install libmpich-mpd1.0-dev
+	    // para mas opciones de packages o instaladores de MPICH2,
+	    // http://www.mcs.anl.gov/research/projects/mpich2/downloads/index.php?s=downloads
+
+Nota: Para usar MPICH se debe tener instalado el paquete ssh y levantado el servicio.
+      Hay que poder ejecutar el siguiente comando sin necesidad de poner clave de usuario
+         ssh <mylaptop> ls
+      Si esto no sucede y se tiene el ssh server levantado, hay que generar las claves publicas
+      y privada del usuario usando el comando ssh-keygen y no ponerle clave cuando la pide.
+      Luego hay que realizar el siguiente comando: cd $HOME/.ssh; cat id_rsa.pub >> authorized_keys2
+      Y reintentar. Si el problema continua, enviar mail a los docentes.
+
+2- crear el archivo de configuracion para mpd (donde $HOME es el home directory)
+   mpd es el daemon que forkea los procesos a pedido de mpiexec
+// Para MPICH2
+	$ pushd $HOME
+	$ echo "MPD_SECRETWORD=miclave" > .mpd.conf
+	$ chmod 600 .mpd.conf
+	$ popd
+	    // donde 'miclave' puede ser cualquier cosa mientras sea única por usuario
+
+
+3- iniciar mpd (una unica vez, mientras no lo mates es reusable)
+// Para MPICH2
+	$ mpdboot &
+	    // en equipos con más de 1 nucleo, --ncpus=N  permite decirle a mpd cuantos usar
+
+4- compilar el codigo (si algo sale mal probar simplemente  mpicc -o tp3 *.c )
+// Para MPICH1
+	$ make
+// Para MPICH2
+	// Modificar la linea del Makefile que contiene MPIROOT = para que apunte a los archivos de MPICH2
+
+5- ejecutar el codigo con mpiexec: 
+// Para MPICH1
+	$ /usr/lib/mpich/bin/mpirun -np 4 ./exclusion 
+// Para MPICH2
+	$ /<PATH/TO/MPICH2/BIN>/mpirun -np 4 ./exclusion 
+

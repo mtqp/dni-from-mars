@@ -1,0 +1,6 @@
+nada
+pedir
+escribir Dentro de la region critica
+nada
+liberar
+nada
