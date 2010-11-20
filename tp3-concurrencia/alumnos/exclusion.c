@@ -15,6 +15,7 @@
 int np, rank;            /* Variables de MPI. */
 static MPI_Comm igualesami;     /* Communicator para todos los clientes (sincronizar ejec. de programas exclusión) */
 
+#define max(x,y) (x>y?x:y)
 
 void servidorcontrol(int micliente)
 {
@@ -25,6 +26,18 @@ void servidorcontrol(int micliente)
 
    /* Variables utilizadas por los servidores */
    int seqnrorecibida;
+   
+   int requesting_critical_section=0;
+   int outstanding_reply_count;
+   int highest_sequence_number=0;
+   int our_sequence_number;
+   int me = micliente - 1;
+   int j;
+
+   int reply_deferred[cantserv];
+
+   for( j = 0 ; j < cantserv ; j++ )
+   	  reply_deferred[j]=FALSE;
 
    while (1){
       MPI_Recv(&seqnrorecibida, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -36,8 +49,54 @@ void servidorcontrol(int micliente)
            printf("Servidor %d: Mi cliente me pidió terminar.\n",rank/2);
            break;
       }
-      // Implementación del Algoritmo de Ricart Agrawala.
 
+      // Implementación del Algoritmo de Ricart Agrawala.
+      if ((tag == TAG_PEDIDO) && (origen == micliente)) {
+	  	  
+		  // busco un número de secuencia
+	      requesting_critical_section = TRUE;
+		  our_sequence_number = highest_sequence_number + 1;
+		  
+		  outstanding_reply_count = np - 1;
+
+		  // aviso mi pedido a los otros servidores
+		  for( j = 0 ; j < cantserv ; j++ )
+		  	if( j != me ) // micliente-1 = nro de server
+		    	MPI_Send(&our_sequence_number, 1, MPI_INT, 2*j, TAG_SERVPED, MPI_COMM_WORLD);
+				// send_message( REQUEST(our_sequence_number,me), j )
+		  
+		  // hay que esperar a que todos respondan para poder seguir la ejecución
+	  }
+ 
+      else if ((tag == TAG_SERVREP)) {
+	  	  // cuando un servidor responde es porque concede el lock
+	  	  outstanding_reply_count--;
+		  
+		  if( outstanding_reply_count == 0 ) {
+		  	// sección crítica
+		    MPI_Send(&ret, 1, MPI_INT, micliente, TAG_PEDIDO, MPI_COMM_WORLD);
+      		MPI_Recv(&ret, 1, MPI_INT, micliente, TAG_LIBERO, MPI_COMM_WORLD, &status);
+
+    	    requesting_critical_section = FALSE;
+   		    for( j = 0 ; j < cantserv ; j++ )
+		      if( reply_deferred[j] ) {
+				reply_deferred[j] = FALSE;
+		    	MPI_Send(&ret, 1, MPI_INT, 2*j, TAG_SERVREP, MPI_COMM_WORLD);
+			  }
+		  }
+	  }
+	  
+      else if ((tag == TAG_SERVPED)) {
+		  int defer_it;
+		  highest_sequence_number = max( highest_sequence_number, seqnrorecibida );
+		  defer_it = requesting_critical_section && ( (seqnrorecibida > our_sequence_number) || (seqnrorecibida==our_sequence_number && origen > me) );
+		  if( defer_it )
+		  	  reply_deferred[origen]=TRUE;
+		  else
+	    	  MPI_Send(&ret, 1, MPI_INT, origen, TAG_SERVREP, MPI_COMM_WORLD);
+			  // Send_Message (REPLY, j);
+		  	  
+	  }
 
    }
    MPI_Barrier(MPI_COMM_WORLD);
