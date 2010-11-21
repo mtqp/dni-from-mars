@@ -52,18 +52,19 @@ void servidorcontrol(int micliente)
 
       // Implementación del Algoritmo de Ricart Agrawala.
       if ((tag == TAG_PEDIDO) && (origen == micliente)) {
-	  	  
 		  // busco un número de secuencia
 	      requesting_critical_section = TRUE;
 		  our_sequence_number = highest_sequence_number + 1;
 		  
-		  outstanding_reply_count = np - 1;
+		  outstanding_reply_count = cantserv - 1;
 
 		  // aviso mi pedido a los otros servidores
 		  for( j = 0 ; j < cantserv ; j++ )
-		  	if( j != me ) // micliente-1 = nro de server
+		  {
+		  	if( j != me ) {
 		    	MPI_Send(&our_sequence_number, 1, MPI_INT, 2*j, TAG_SERVPED, MPI_COMM_WORLD);
-				// send_message( REQUEST(our_sequence_number,me), j )
+			}
+		  }
 		  
 		  // hay que esperar a que todos respondan para poder seguir la ejecución
 	  }
@@ -91,11 +92,9 @@ void servidorcontrol(int micliente)
 		  highest_sequence_number = max( highest_sequence_number, seqnrorecibida );
 		  defer_it = requesting_critical_section && ( (seqnrorecibida > our_sequence_number) || (seqnrorecibida==our_sequence_number && origen > me) );
 		  if( defer_it )
-		  	  reply_deferred[origen]=TRUE;
+		  	  reply_deferred[origen/2]=TRUE;
 		  else
 	    	  MPI_Send(&ret, 1, MPI_INT, origen, TAG_SERVREP, MPI_COMM_WORLD);
-			  // Send_Message (REPLY, j);
-		  	  
 	  }
 
    }
@@ -194,8 +193,8 @@ int main(int argc, char *argv[])
            NOTA: Descomentar las siguientes líneas para poder ver los printf de los procesos
                  cuando son realizados y no agrupados al final
         */
-//	setbuf(stdout, NULL);
-//	setbuf(stderr, NULL);
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 	printf("\nLanzando proceso %u\n", rank);
 	if (tipo==0)
 	{
