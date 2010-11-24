@@ -69,8 +69,6 @@ void servidorcontrol(int micliente)
 	  		}
 	  	}
 	  }
-
-
    }
    MPI_Barrier(MPI_COMM_WORLD);
 }
