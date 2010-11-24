@@ -1,0 +1,40 @@
+\documentclass[12pt,titlepage]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\func}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\kw}[1]{{\em #1}}
+
+\title{{\sc\normalsize Sistemas Operativos}\\{\bf Trabajo Práctico Nº2}}
+\author{Grupo 20\vspace*{3em} \\ 
+\begin{tabular}{lcr}
+Daniel Grosso & 694/08 & dgrosso@gmail.com\\
+Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
+\end{tabular}}
+\date{\vspace*{3em} \normalsize{Noviembre 2010}}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+\begin{section}{Explicación servidor\_multi}
+	El servidor recibe de la red constantemente mensajes. Cuando uno le llega verifica el origen del mensaje, pudiendo discernir si es de su cliente o de otro servidor, si terminó o quiere ejecutar (cliente), o si respondió o pide (servidor).
+	EXPLICAR LA PRIORIDAD
+	Veamos el caso si es un cliente el cual envía el mensaje:
+		- el cliente puede estar avisándole a su servidor, que desea cerrarle, lo que provoca que el servidor además se cierre.
+		- si hace pedido del recurso, el servidor envía el a todos sus pares el acceso exclusivo al mismo mediante una señal por MPI (ESPECIFICAR MAS)
+	Si UN servidor envía el mensaje, puede ser por dos situaciones:
+		- Responda al pedido del SERVIDOR ACTUAL aceptando la petición del mismo, esto implica, que el que envió la respuesta, no utilizará el recurso. Se posee una variable que chequea la cantidad de servidores que respondieron positivamente al pedido, cuando esta es cero, implica que todos los servidores han aceptado el pedido, por lo tanto, el recurso ahora le pertenece a ese servidor. Envía entonces un mensaje a su cliente avisándole que puede utilizar el recurso y se queda esperando (todo esto con MPI) a que el último responda que ha terminado de utilizarlo.
+		Una vez hecho esto, el servidor se encarga de avisar a todos los que NO aviso (explicar que se guarda en un array los servidores a los q no se respondio).
+		- Pida el recurso. Pueden suceder tres caso, que el servidor que recibe la señal tenga en su poder el recurso, que lo desee pero todavía no lo tenga, o que no lo desee en absoluto.
+			1- Al tener la señal en su poder, no responde al pedido, almacenando la peticion en una estructura para luego responderla, es decir, cuando ya no haga uso del recurso.
+			2- Lo agrega también a la lista de 'respuestas pendientes' si solo si su prioridad es menor a la del que recibió el pedido
+			3- Al no desear el recurso, inmediatamente le responde, aceptando su petición.
+			
+	En el paper, estaba dividido en varios threads, EXPLICAR COMO LOS UNIMOS.
+\end{section}
+
+\end{document}
