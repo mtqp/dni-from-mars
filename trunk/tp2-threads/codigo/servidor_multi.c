@@ -8,6 +8,10 @@
 pthread_mutex_t mutex[ALTO_AULA][ANCHO_AULA];
 pthread_mutex_t seccion_critica;
 
+pthread_mutex_t mutex_rescatistas = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_condicion   = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  condicion_rescatistas = PTHREAD_COND_INITIALIZER;
+
 /* Estructura que almacena los datos de una reserva. */
 typedef struct {
 	int posiciones[ALTO_AULA][ANCHO_AULA];
@@ -47,6 +51,15 @@ void t_aula_liberar(t_aula *un_aula, t_persona *alumno)
 {
 	un_aula->cantidad_de_personas--;
 	un_aula->posiciones[alumno->posicion_fila][alumno->posicion_columna]--;
+	
+	pthread_mutex_lock( &mutex_rescatistas );
+		un_aula->rescatistas_disponibles++;
+		printf("rescatistas libres: %d\n", un_aula->rescatistas_disponibles );
+	pthread_mutex_unlock( &mutex_rescatistas );
+
+	pthread_mutex_lock( &mutex_condicion );
+		pthread_cond_signal( &condicion_rescatistas );
+	pthread_mutex_unlock( &mutex_condicion );
 }
 
 static void terminar_servidor_de_alumno(int socket_fd, t_aula *aula, t_persona *alumno) {
@@ -107,14 +120,26 @@ t_comando intentar_moverse(t_aula *el_aula, t_persona *alumno, t_direccion dir)
 		pthread_mutex_unlock(&mutex[fila][columna]);
 		pthread_mutex_unlock(&mutex[alumno->posicion_fila][alumno->posicion_columna]);
 	}
-	
+
 	return pudo_moverse;
 }
 
 void colocar_mascara(t_aula *el_aula, t_persona *alumno)
 {
-	printf("Esperando rescatista. Ya casi %s!\n", alumno->nombre);
-		
+	printf("Esperando rescatista. Ya casi %s!\n", alumno->nombre);	
+
+	pthread_mutex_lock( &mutex_condicion );
+		// espera a que haya un rescatista libre
+		while( el_aula->rescatistas_disponibles == 0 )
+			pthread_cond_wait( &condicion_rescatistas, &mutex_condicion );
+	pthread_mutex_unlock( &mutex_condicion );
+
+	pthread_mutex_lock( &mutex_rescatistas );
+		el_aula->rescatistas_disponibles--;
+		printf("rescatistas libres: %d\n", el_aula->rescatistas_disponibles );
+	pthread_mutex_unlock( &mutex_rescatistas );
+
+	printf("Rescatista %d antendiendo a %s\n", RESCATISTAS-el_aula->rescatistas_disponibles, alumno->nombre);
 	alumno->tiene_mascara = true;
 }
 
