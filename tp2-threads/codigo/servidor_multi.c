@@ -136,10 +136,9 @@ void colocar_mascara(t_aula *el_aula, t_persona *alumno)
 
 	pthread_mutex_lock( &mutex_rescatistas );
 		el_aula->rescatistas_disponibles--;
-		printf("rescatistas libres: %d\n", el_aula->rescatistas_disponibles );
 	pthread_mutex_unlock( &mutex_rescatistas );
+	printf("rescatistas libres: %d\n", el_aula->rescatistas_disponibles );
 
-	printf("Rescatista %d antendiendo a %s\n", RESCATISTAS-el_aula->rescatistas_disponibles, alumno->nombre);
 	alumno->tiene_mascara = true;
 }
 
@@ -190,8 +189,6 @@ void *atendedor_de_alumno(void* params)
 	
 	printf("Listo, %s es libre!\n", alumno.nombre);
 
-	pthread_exit(NULL); 
-		
 	return NULL;
 	//close thread
 
@@ -245,6 +242,7 @@ int main(void)
 		}
 		else
 		{
+			printf("esto anda\n");
 			//Guarda en Struct todos los parametros para pasarle al thread
 			pthread_t thread;
 			thread_params * params  = (thread_params*) malloc(sizeof(thread_params));
