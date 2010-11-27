@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define PORT 45555
+#define PORT 5555
 #define MENSAJE_MAXIMO 1024
 #define DATO_MAXIMO 100
 #define STRING_MAXIMO 200
