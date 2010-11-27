@@ -30,7 +30,9 @@ Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
 	Para solucionar este problema, forzamos mediante un nuevo \kw{mutex} a realizar ambos \kw{locks} de manera atómica. Esta nueva sección crítica comienza antes del primer \kw{lock} y termina después del segundo. Cada \kw{lock} fue estratégicamente ubicado de forma tal que no bloqueara posiciones que no utilizará luego.
 	
 	En conclusión, cada movimiento de los clientes, puede realizarse en simultáneo, con la excepción de que ambos deseen moverse y/o estén en una misma posición.
-	 
+
+	Otro problema a solucionar consistía en la asignación de un rescatista a cada alumno para que le coloque la máscara. La cantidad de rescatistas es limitada, por lo tanto es necesario llevar la cuenta de cuántos rescatistas se disponen en el momento que sale del aula cada alumno. Como varios alumnos (\kw{threads}) podrían pedir un rescatista disponible al mismo tiempo, se podroduce una condición de carrera. Esta condición de carrera se controla mediante una variable de condición y un \kw{mutex} asociado a dicha variable. Cuando cada alumno sale del aula, espera (mediante \code{wait}) a que no haya ningún otro alumno pidiendo un rescatista. Al pedir el rescatista (el \kw{thread} asociado al alumno decrementa la variable compartida que cuenta los rescatistas disponibles), avisa (mediante \code{signal}) que ya fue asignado un rescatista para colocarle la máscara. De esta manera, los rescatistas se asignan de forma ordenada.
+	
 \end{section}
 
 \end{document}
