@@ -7,7 +7,7 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\kw}[1]{{\em #1}}
 
-\title{{\sc\normalsize Sistemas Operativos}\\{\bf Trabajo Práctico Nº2}}
+\title{{\sc\normalsize Sistemas Operativos}\\{\bf Trabajo Práctico Nº3}}
 \author{Grupo 20\vspace*{3em} \\ 
 \begin{tabular}{lcr}
 Daniel Grosso & 694/08 & dgrosso@gmail.com\\
@@ -20,21 +20,30 @@ Mariano De Sousa Bispo & 389/08 & marian\_sabianaa@hotmail.com \\
 \maketitle
 \end{titlepage}
 
-\begin{section}{Explicación servidor\_multi}
-	El servidor recibe de la red constantemente mensajes. Cuando uno le llega verifica el origen del mensaje, pudiendo discernir si es de su cliente o de otro servidor, si terminó o quiere ejecutar (cliente), o si respondió o pide (servidor).
-	EXPLICAR LA PRIORIDAD
-	Veamos el caso si es un cliente el cual envía el mensaje:
-		- el cliente puede estar avisándole a su servidor, que desea cerrarle, lo que provoca que el servidor además se cierre.
-		- si hace pedido del recurso, el servidor envía el a todos sus pares el acceso exclusivo al mismo mediante una señal por MPI (ESPECIFICAR MAS)
-	Si UN servidor envía el mensaje, puede ser por dos situaciones:
-		- Responda al pedido del SERVIDOR ACTUAL aceptando la petición del mismo, esto implica, que el que envió la respuesta, no utilizará el recurso. Se posee una variable que chequea la cantidad de servidores que respondieron positivamente al pedido, cuando esta es cero, implica que todos los servidores han aceptado el pedido, por lo tanto, el recurso ahora le pertenece a ese servidor. Envía entonces un mensaje a su cliente avisándole que puede utilizar el recurso y se queda esperando (todo esto con MPI) a que el último responda que ha terminado de utilizarlo.
-		Una vez hecho esto, el servidor se encarga de avisar a todos los que NO aviso (explicar que se guarda en un array los servidores a los q no se respondio).
-		- Pida el recurso. Pueden suceder tres caso, que el servidor que recibe la señal tenga en su poder el recurso, que lo desee pero todavía no lo tenga, o que no lo desee en absoluto.
-			1- Al tener la señal en su poder, no responde al pedido, almacenando la peticion en una estructura para luego responderla, es decir, cuando ya no haga uso del recurso.
-			2- Lo agrega también a la lista de 'respuestas pendientes' si solo si su prioridad es menor a la del que recibió el pedido
-			3- Al no desear el recurso, inmediatamente le responde, aceptando su petición.
-			
-	En el paper, estaba dividido en varios threads, EXPLICAR COMO LOS UNIMOS.
+\begin{section}{Explicación servidor}
+	Cada servidor tiene un único cliente asignado y recibe constantemente mensajes tanto de su cliente como de los otros servidores. Cuando un mensaje llega, obtiene mediante \code{MPI\_Recv} el origen, el tipo y un dato del mensaje pudiendo así discernir su procedencia, si el cliente terminó o quiere ejecutar una sección crítica, ó si algún otro servidor envió un mensaje para coordinar la concurrencia.
+	
+	Cuando el servidor recibe un mensaje por parte del cliente puede ser por dos motivos: porque solicita el ingreso a la sección crítica ó porque notifica que terminó su ejecución. Si el mensaje recibido es del primer tipo, utilizando el algoritmo de exclusión mutua de Ricart-Agrawala (explicado más adelante), el servidor pide a los otros servidores el acceso exclusivo a la sección crítica. Si en cambio el mensaje informaba la terminación del cliente, el servidor también termina su ejecución.
+	
+	\begin{subsection}{Implementación del algoritmo de Ricart-Agrawala}
+		La implementación del algoritmo de Ricart y Agrawala fue hecha con un único proceso por servidor, utilizando el \kw{tag} de los mensajes para distinguir en cuál de los tres procesos propuestos en el pseudocódigo se está.
+
+		Cuando el cliente solicita el ingreso a la sección crítica, el servidor busca un nuevo \kw{número de secuencia} calculado como el sucesor del número de secuencia más alto recibido hasta el momento (inicialmente cero). Luego envía mediante \code{MPI\_Send} el mensaje de solcitud junto con el número de secuencia propio a todos los otros servidores. Cada servidor receptor de este mensaje decide si le concede el acceso inmediatamente o no, además de actualizar si es necesario el número de sequencia más alto que recibió. Si el servidor receptor no necesita la sección crítica, concede el acceso de forma inmediata. Si en cambio también requería el acceso exclusivo, lo concede únicamente si el número de secuencia recibido es menor al propio\footnote{Si los números de secuencia son iguales, tiene derecho el de menor \kw{id} de proceso.}. En caso de no conceder el acceso, el servidor deja en espera la respuesta. Una vez de que todos los servidores receptores conceden el acceso a un servidor determinado, el servidor ganador avisa a su cliente que puede ingresar a la sección crítica, espera a recibir una notificación del cliente (avisando que terminó de ejecutar dicha sección) y luego concede el acceso a todos los servidores que estaban en espera. De esta manera, cada cliente puede ejecutar la sección crítica de manera exclusiva.
+
+	\end{subsection}
+
+%	Veamos el caso si es un cliente el cual envía el mensaje:
+%		- el cliente puede estar avisándole a su servidor, que desea cerrarle, lo que provoca que el servidor además se cierre.
+%		- si hace pedido del recurso, el servidor envía el a todos sus pares el acceso exclusivo al mismo mediante una señal por MPI (ESPECIFICAR MAS)
+%	Si UN servidor envía el mensaje, puede ser por dos situaciones:
+%		- Responda al pedido del SERVIDOR ACTUAL aceptando la petición del mismo, esto implica, que el que envió la respuesta, no utilizará el recurso. Se posee una variable que chequea la cantidad de servidores que respondieron positivamente al pedido, cuando esta es cero, implica que todos los servidores han aceptado el pedido, por lo tanto, el recurso ahora le pertenece a ese servidor. Envía entonces un mensaje a su cliente avisándole que puede utilizar el recurso y se queda esperando (todo esto con MPI) a que el último responda que ha terminado de utilizarlo.
+%		Una vez hecho esto, el servidor se encarga de avisar a todos los que NO aviso (explicar que se guarda en un array los servidores a los q no se respondio).
+%		- Pida el recurso. Pueden suceder tres caso, que el servidor que recibe la señal tenga en su poder el recurso, que lo desee pero todavía no lo tenga, o que no lo desee en absoluto.
+%			1- Al tener la señal en su poder, no responde al pedido, almacenando la peticion en una estructura para luego responderla, es decir, cuando ya no haga uso del recurso.
+%			2- Lo agrega también a la lista de 'respuestas pendientes' si solo si su prioridad es menor a la del que recibió el pedido
+%			3- Al no desear el recurso, inmediatamente le responde, aceptando su petición.
+%			
+%	En el paper, estaba dividido en varios threads, EXPLICAR COMO LOS UNIMOS.
 \end{section}
 
 \end{document}
